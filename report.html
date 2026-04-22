@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>My Activity</title>
+  <style>
+    :root{
+      --bg1:#6a5cff;
+      --bg2:#8b7bff;
+      --card:#f6f4ff;
+      --card-border:rgba(255,255,255,0.9);
+      --card-shadow:
+        0 0 0 1px rgba(255,255,255,0.22),
+        0 18px 35px rgba(0,0,0,0.18),
+        0 28px 70px rgba(0,0,0,0.28),
+        0 8px 18px rgba(103,79,255,0.18);
+      --text:#141b2d;
+      --muted:#667085;
+      --line:#e8e6f5;
+      --primary:#6a5cff;
+      --green1:#a7f06b;
+      --green2:#7dffb2;
+      --danger:#ff5c7a;
+      --warn:#ffb020;
+      --input:#ffffff;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    *:focus,*:active{
+      outline:none !important;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html, body{
+      overscroll-behavior:none;
+    }
+
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.22), transparent 18%),
+        radial-gradient(circle at top right, rgba(255,255,255,0.14), transparent 20%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+    }
+
+    .app{
+      max-width:480px;
+      margin:0 auto;
+      min-height:100vh;
+      padding:16px;
+      position:relative;
+    }
+
+    .hidden{display:none !important}
+
+    .sticky-topbar{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      width:100%;
+      max-width:480px;
+      margin:0 auto;
+      z-index:999;
+      padding:10px 16px 14px;
+      background:linear-gradient(135deg, #8b7bff, #7b6cff);
+      border-bottom:1px solid rgba(255,255,255,0.28);
+      box-shadow:
+        0 8px 18px rgba(0,0,0,0.14),
+        inset 0 1px 0 rgba(255,255,255,0.35);
+      border-bottom-left-radius:24px;
+      border-bottom-right-radius:24px;
+      overflow:hidden;
+      animation:none !important;
+      transform:none !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+      will-change:auto;
+      backface-visibility:hidden;
+      -webkit-backface-visibility:hidden;
+    }
+
+    #newReportScreen{
+      padding-top:92px;
+    }
+
+    .header-bar{
+      display:grid;
+      grid-template-columns:44px 1fr 44px;
+      align-items:center;
+      gap:8px;
+      width:100%;
+    }
+
+    .icon-btn{
+      width:44px;
+      height:44px;
+      border:none;
+      border-radius:16px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.12));
+      color:#ffffff;
+      border:1px solid rgba(255,255,255,0.28);
+      box-shadow:
+        0 10px 24px rgba(0,0,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.35);
+      font-size:20px;
+      font-weight:900;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
+      transition:transform .16s ease, opacity .16s ease;
+    }
+
+    .icon-btn:active{
+      transform:scale(.97);
+    }
+
+    .header-title{
+      min-width:0;
+      width:100%;
+      text-align:center;
+      font-size:16px;
+      font-weight:900;
+      margin:0;
+      letter-spacing:.8px;
+      color:#ffffff;
+      text-shadow:0 2px 10px rgba(0,0,0,0.18);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .report-card{
+      width:100%;
+      background:linear-gradient(180deg, #faf9ff 0%, #f2efff 100%);
+      border:1px solid var(--card-border);
+      border-radius:30px;
+      padding:18px 16px;
+      box-shadow:var(--card-shadow);
+      position:relative;
+      overflow:hidden;
+      margin-bottom:16px;
+      animation:cardEnter .26s ease-out;
+    }
+
+    .report-card::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 14% 10%, rgba(255,255,255,0.95), transparent 20%),
+        linear-gradient(180deg, rgba(255,255,255,0.55), transparent 28%);
+      pointer-events:none;
+    }
+
+    .report-card > *{
+      position:relative;
+      z-index:1;
+    }
+
+    .field-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+
+    .time-row{
+      display:flex;
+      gap:10px;
+    }
+
+    .time-row > div{
+      flex:1;
+    }
+
+    label{
+      display:block;
+      margin:12px 0 7px;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:800;
+    }
+
+    input, textarea{
+      width:100%;
+      border:none;
+      background:linear-gradient(180deg, #ffffff 0%, #fbfbff 100%);
+      color:var(--text);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:16px 14px;
+      font-size:16px;
+      font-weight:700;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.95), 0 4px 12px rgba(17,24,39,0.04);
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    input:focus, textarea:focus{
+      transform:translateY(-1px);
+      border-color:#b8adff;
+      box-shadow:
+        0 10px 22px rgba(93,76,255,0.10),
+        inset 0 1px 0 rgba(255,255,255,1);
+    }
+
+    input::placeholder, textarea::placeholder{
+      color:#a1a7b8;
+      font-weight:700;
+    }
+
+    textarea{
+      resize:vertical;
+      min-height:120px;
+    }
+
+    .btn{
+      width:100%;
+      border:none;
+      border-radius:20px;
+      padding:16px 16px;
+      margin-top:14px;
+      font-size:16px;
+      font-weight:900;
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    }
+
+    .btn:active{transform:scale(.98)}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+
+    .btn-primary{
+      color:#ffffff;
+      background:linear-gradient(135deg,#6a5cff,#8b7bff);
+      box-shadow:0 14px 28px rgba(106,92,255,0.26), inset 0 1px 0 rgba(255,255,255,0.28);
+    }
+
+    .btn-secondary{
+      color:var(--primary);
+      background:linear-gradient(180deg, #ffffff 0%, #f3f0ff 100%);
+      border:1px solid #e8e3ff;
+      box-shadow:0 10px 20px rgba(17,24,39,0.05), inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    .btn-good{
+      color:#172100;
+      background:linear-gradient(135deg,var(--green1),var(--green2));
+      box-shadow:0 14px 28px rgba(125,255,178,0.26), inset 0 1px 0 rgba(255,255,255,0.55);
+    }
+
+    .btn-row{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .btn-row .btn{
+      margin-top:0;
+      flex:1;
+    }
+
+    .msg{
+      min-height:18px;
+      margin-top:10px;
+      text-align:center;
+      font-size:13px;
+      color:#ffffff;
+      font-weight:700;
+      text-shadow:0 1px 3px rgba(0,0,0,0.14);
+    }
+
+    .small-note{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:10px;
+      font-weight:700;
+    }
+
+    .drawer{
+      position:fixed;
+      inset:0 auto 0 0;
+      width:290px;
+      background:linear-gradient(180deg, #faf9ff 0%, #f2efff 100%);
+      border-right:1px solid rgba(255,255,255,0.95);
+      box-shadow:var(--card-shadow);
+      padding:18px;
+      transform:translateX(-100%);
+      transition:transform .22s ease;
+      z-index:1001;
+      overflow:auto;
+    }
+
+    .drawer.open{
+      transform:translateX(0);
+    }
+
+    .drawer-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.30);
+      backdrop-filter:blur(6px);
+      -webkit-backdrop-filter:blur(6px);
+      display:none;
+      z-index:1000;
+    }
+
+    .drawer-overlay.show{
+      display:block;
+    }
+
+    .drawer-brand{
+      width:100%;
+      padding:16px 14px;
+      border-radius:22px;
+      background:linear-gradient(180deg, rgba(106,92,255,0.12), rgba(139,123,255,0.08));
+      border:1px solid rgba(106,92,255,0.14);
+      box-shadow:0 10px 24px rgba(17,24,39,0.06);
+      margin-bottom:18px;
+      text-align:center;
+      animation:floatSoft 3.2s ease-in-out infinite;
+    }
+
+    .drawer-brand .brand-title{
+      font-size:24px;
+      font-weight:900;
+      letter-spacing:1.5px;
+      color:#6a5cff;
+      margin-bottom:6px;
+    }
+
+    .drawer-brand .brand-subtitle{
+      font-size:18px;
+      font-weight:900;
+      color:#141b2d;
+      line-height:1.3;
+    }
+
+    .popup{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.22);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:2000;
+    }
+
+    .popup.show{
+      display:flex;
+      animation:popupFade .18s ease;
+    }
+
+    .popup-card{
+      width:100%;
+      max-width:340px;
+      background:linear-gradient(180deg, #faf9ff 0%, #f3efff 100%);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,0.95);
+      border-radius:30px;
+      padding:24px;
+      text-align:center;
+      box-shadow:0 28px 70px rgba(0,0,0,0.20), 0 12px 30px rgba(93,76,255,0.14);
+      position:relative;
+      overflow:hidden;
+      animation:popupUp .18s ease;
+    }
+
+    .popup-card::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.95), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.45), transparent 28%);
+      pointer-events:none;
+    }
+
+    .popup-card > *{
+      position:relative;
+      z-index:1;
+    }
+
+    .popup-circle{
+      width:74px;
+      height:74px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#11b978,#18d18b);
+      margin:0 auto 14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:34px;
+      font-weight:900;
+      box-shadow:0 14px 30px rgba(17,185,120,0.28), inset 0 1px 0 rgba(255,255,255,0.45);
+    }
+
+    .popup-card h3{
+      margin:0 0 8px;
+      font-size:22px;
+    }
+
+    .popup-card p{
+      margin:0 0 14px;
+      color:var(--muted);
+      line-height:1.5;
+      white-space:pre-wrap;
+      font-weight:700;
+    }
+
+    .enrollment-item{
+      background:linear-gradient(180deg, #ffffff 0%, #f3f0ff 100%);
+      border:1px solid #e8e3ff;
+      border-radius:20px;
+      padding:12px;
+      margin-top:10px;
+      box-shadow:0 10px 20px rgba(17,24,39,0.05);
+    }
+
+    .enrollment-title{
+      font-size:14px;
+      font-weight:800;
+      margin:0 0 8px;
+      color:var(--text);
+    }
+
+    .time-box{
+      position:relative;
+    }
+
+    .time-label{
+      position:absolute;
+      left:14px;
+      top:16px;
+      font-size:13px;
+      color:#a1a7b8;
+      font-weight:800;
+      pointer-events:none;
+      transition:.18s ease;
+      z-index:2;
+    }
+
+    .time-box.active .time-label,
+    .time-box.has-value .time-label{
+      opacity:0;
+    }
+
+    .loading-dots{
+      display:inline-flex;
+      gap:6px;
+      margin-top:4px;
+    }
+
+    .loading-dots span{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--primary);
+      animation:blink 1s infinite ease-in-out;
+    }
+
+    .loading-dots span:nth-child(2){animation-delay:.15s}
+    .loading-dots span:nth-child(3){animation-delay:.30s}
+
+    @keyframes blink{
+      0%,80%,100%{opacity:.25; transform:translateY(0)}
+      40%{opacity:1; transform:translateY(-4px)}
+    }
+
+    @keyframes cardEnter{
+      from{opacity:0; transform:translateY(10px)}
+      to{opacity:1; transform:translateY(0)}
+    }
+
+    @keyframes popupFade{
+      from{opacity:0}
+      to{opacity:1}
+    }
+
+    @keyframes popupUp{
+      from{opacity:0; transform:translateY(8px) scale(.985)}
+      to{opacity:1; transform:translateY(0) scale(1)}
+    }
+
+    @keyframes floatSoft{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-3px)}
+    }
+  </style>
+</head>
+<body>
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+
+  <aside class="drawer" id="drawer">
+    <div class="drawer-brand">
+      <div class="brand-title">MY ACTIVITY</div>
+      <div class="brand-subtitle">Easy Report Saving System</div>
+    </div>
+
+    <button class="btn btn-secondary" id="drawerShareBtn">Share App</button>
+    <button class="btn btn-secondary" id="drawerCloseBtn">Close</button>
+    <button class="btn btn-primary" id="drawerLogoutBtn">Logout</button>
+  </aside>
+
+  <div class="popup" id="popup">
+    <div class="popup-card">
+      <div class="popup-circle" id="popupCircle">✓</div>
+      <h3 id="popupTitle">Success</h3>
+      <p id="popupText">Done</p>
+      <div class="loading-dots hidden" id="loadingDots">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="btn-row" id="popupBtnRow">
+        <button class="btn btn-secondary hidden" id="popupCancelBtn">No</button>
+        <button class="btn btn-primary" id="popupOkBtn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+    <section id="newReportScreen">
+      <div class="sticky-topbar">
+        <div class="header-bar">
+          <button class="icon-btn" id="menuBtn">☰</button>
+          <h2 class="header-title" id="headerTitle">NEW REPORT</h2>
+          <button class="icon-btn" id="goDashboardBtn">➡️</button>
+        </div>
+      </div>
+
+      <div class="report-card">
+        <div class="field-grid">
+          <div>
+            <label>Date</label>
+            <input type="date" id="date" />
+          </div>
+
+          <div>
+            <label>Time</label>
+            <div class="time-row">
+              <div class="time-box" id="timeFromBox">
+                <span class="time-label">From</span>
+                <input type="time" id="timeFrom" />
+              </div>
+              <div class="time-box" id="timeToBox">
+                <span class="time-label">To</span>
+                <input type="time" id="timeTo" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label>Friend request</label>
+            <input type="number" id="friendRequest" min="0" value="0" />
+          </div>
+
+          <div>
+            <label>Accept</label>
+            <input type="number" id="accept" min="0" value="0" />
+          </div>
+
+          <div>
+            <label>Message</label>
+            <input type="number" id="message" min="0" value="0" />
+          </div>
+
+          <div>
+            <label>Reply</label>
+            <input type="number" id="reply" min="0" value="0" />
+          </div>
+
+          <div>
+            <label>Chatting</label>
+            <input type="number" id="chatting" min="0" value="0" />
+          </div>
+
+          <div>
+            <label>Discuss work (K.K)</label>
+            <input type="number" id="discussWork" min="0" value="0" />
+          </div>
+
+          <div>
+            <label>Mobile number</label>
+            <input type="number" id="mobileNumberCount" min="0" value="0" />
+          </div>
+
+          <div>
+            <label>Invitation</label>
+            <input type="number" id="invitation" min="0" value="0" />
+          </div>
+
+          <div>
+            <label>Confirm</label>
+            <input type="number" id="confirm" min="0" value="0" />
+          </div>
+
+          <div>
+            <label>STP</label>
+            <input type="number" id="stp" min="0" value="0" />
+          </div>
+
+          <div>
+            <label>Follow up</label>
+            <input type="number" id="followUp" min="0" value="0" />
+          </div>
+
+          <div>
+            <label>Enrollment (D.D)</label>
+            <input type="number" id="dd" min="0" value="0" />
+          </div>
+        </div>
+
+        <div id="enrollmentContainer"></div>
+
+        <div class="small-note">You can also paste a report below for fast saving.</div>
+      </div>
+
+      <div class="report-card">
+        <label>Paste Report (Fast Save)</label>
+        <textarea id="quickPaste" placeholder="Example:
+DATE➜17/04/26
+TIME➜9am to 6pm
+FR➜100
+ACP➜50
+SMS➜70
+REP➜20
+CH➜15
+KK➜10
+MOB➜5
+IN➜4
+CNFRM➜2
+STP➜1
+FOLLOW UP➜0
+DD➜1"></textarea>
+
+        <button class="btn btn-secondary" id="parsePasteBtn">Apply Pasted Report</button>
+      </div>
+
+      <button class="btn btn-good" id="saveReportBtn">Save</button>
+      <div class="msg" id="saveMsg"></div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      addDoc,
+      updateDoc,
+      collection,
+      getDocs,
+      query,
+      where,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAywuz35rfyqnUsMy6sgCSqYFzZUuPl1n8",
+      authDomain: "my-activity-f1bb0.firebaseapp.com",
+      projectId: "my-activity-f1bb0",
+      storageBucket: "my-activity-f1bb0.firebasestorage.app",
+      messagingSenderId: "354523125344",
+      appId: "1:354523125344:web:6aede87ba0fee2774ed505"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const menuBtn = document.getElementById("menuBtn");
+    const drawer = document.getElementById("drawer");
+    const drawerOverlay = document.getElementById("drawerOverlay");
+    const drawerCloseBtn = document.getElementById("drawerCloseBtn");
+    const drawerLogoutBtn = document.getElementById("drawerLogoutBtn");
+    const drawerShareBtn = document.getElementById("drawerShareBtn");
+    const goDashboardBtn = document.getElementById("goDashboardBtn");
+    const headerTitle = document.getElementById("headerTitle");
+
+    const saveReportBtn = document.getElementById("saveReportBtn");
+    const saveMsg = document.getElementById("saveMsg");
+    const parsePasteBtn = document.getElementById("parsePasteBtn");
+    const quickPaste = document.getElementById("quickPaste");
+    const enrollmentContainer = document.getElementById("enrollmentContainer");
+
+    const popup = document.getElementById("popup");
+    const popupTitle = document.getElementById("popupTitle");
+    const popupText = document.getElementById("popupText");
+    const popupOkBtn = document.getElementById("popupOkBtn");
+    const popupCancelBtn = document.getElementById("popupCancelBtn");
+    const popupCircle = document.getElementById("popupCircle");
+    const popupBtnRow = document.getElementById("popupBtnRow");
+    const loadingDots = document.getElementById("loadingDots");
+
+    const timeFrom = document.getElementById("timeFrom");
+    const timeTo = document.getElementById("timeTo");
+    const timeFromBox = document.getElementById("timeFromBox");
+    const timeToBox = document.getElementById("timeToBox");
+
+    let popupOkAction = null;
+    let popupCancelAction = null;
+    let ignoreNextDrawerPop = false;
+    let isProgrammaticNavigation = false;
+
+    let isEditMode = false;
+    let editingReportId = "";
+    let initialEditLoaded = false;
+
+    function showMsg(el, text, color = ""){
+      el.textContent = text;
+      el.style.color = color || "#ffffff";
+    }
+
+    function openPopup(title, text, options = {}){
+      const {
+        onOk = null,
+        onCancel = null,
+        okText = "OK",
+        cancelText = "No",
+        showCancel = false,
+        mode = "normal"
+      } = options;
+
+      popupTitle.textContent = title;
+      popupText.textContent = text;
+      popup.classList.add("show");
+
+      popupOkAction = onOk;
+      popupCancelAction = onCancel;
+
+      popupOkBtn.textContent = okText;
+      popupCancelBtn.textContent = cancelText;
+
+      if(mode === "loading"){
+        popupCircle.textContent = "⏳";
+        popupBtnRow.classList.add("hidden");
+        loadingDots.classList.remove("hidden");
+      } else {
+        popupCircle.textContent = title === "Error" ? "!" : "✓";
+        popupBtnRow.classList.remove("hidden");
+        loadingDots.classList.add("hidden");
+        popupCancelBtn.classList.toggle("hidden", !showCancel);
+      }
+    }
+
+    function closePopup(){
+      popup.classList.remove("show");
+      popupOkAction = null;
+      popupCancelAction = null;
+    }
+
+    popupOkBtn.addEventListener("click", () => {
+      popup.classList.remove("show");
+      if(typeof popupOkAction === "function"){
+        popupOkAction();
+      }
+      popupOkAction = null;
+      popupCancelAction = null;
+    });
+
+    popupCancelBtn.addEventListener("click", () => {
+      popup.classList.remove("show");
+      if(typeof popupCancelAction === "function"){
+        popupCancelAction();
+      }
+      popupOkAction = null;
+      popupCancelAction = null;
+    });
+
+    function openDrawer(){
+      drawer.classList.add("open");
+      drawerOverlay.classList.add("show");
+      history.pushState({ page: "drawer" }, "");
+    }
+
+    function closeDrawer(fromBack = false){
+      drawer.classList.remove("open");
+      drawerOverlay.classList.remove("show");
+
+      if(!fromBack && history.state && history.state.page === "drawer"){
+        ignoreNextDrawerPop = true;
+        history.back();
+      }
+    }
+
+    async function shareApp(){
+      const shareData = {
+        title: "MY ACTIVITY",
+        text: "Check out MY ACTIVITY - Easy Report Saving System"
+      };
+
+      try{
+        if(navigator.share){
+          await navigator.share(shareData);
+        }else if(navigator.clipboard){
+          await navigator.clipboard.writeText(shareData.text);
+          openPopup("Shared", "App text copied successfully");
+        }else{
+          openPopup("Error", "Share not supported");
+        }
+      }catch(error){
+        if(error && error.name !== "AbortError"){
+          openPopup("Error", "Share failed");
+        }
+      }
+    }
+
+    menuBtn.addEventListener("click", openDrawer);
+    drawerCloseBtn.addEventListener("click", () => closeDrawer());
+    drawerOverlay.addEventListener("click", () => closeDrawer());
+
+    drawerShareBtn.addEventListener("click", async () => {
+      closeDrawer();
+      setTimeout(async () => {
+        await shareApp();
+      }, 50);
+    });
+
+    drawerLogoutBtn.addEventListener("click", () => {
+      closeDrawer();
+      setTimeout(() => {
+        openPopup("Logout", "Do you want to logout?", {
+          showCancel: true,
+          okText: "Yes",
+          cancelText: "No",
+          onOk: async () => {
+            isProgrammaticNavigation = true;
+            await signOut(auth);
+            location.href = "index.html";
+          }
+        });
+      }, 50);
+    });
+
+    goDashboardBtn.addEventListener("click", () => {
+      isProgrammaticNavigation = true;
+      location.href = "dashboard.html";
+    });
+
+    function getEditReportIdFromSource(){
+      const params = new URLSearchParams(window.location.search);
+      const reportIdFromUrl = params.get("reportId");
+      const editFlag = params.get("edit");
+      const reportIdFromStorage = localStorage.getItem("editReportId") || "";
+
+      if(editFlag === "1" && reportIdFromUrl){
+        return reportIdFromUrl;
+      }
+
+      if(reportIdFromStorage){
+        return reportIdFromStorage;
+      }
+
+      return "";
+    }
+
+    function clearEditModeSource(){
+      localStorage.removeItem("editReportId");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("edit");
+      url.searchParams.delete("reportId");
+      window.history.replaceState({}, "", url.toString());
+    }
+
+    function setEditModeUI(){
+      if(isEditMode){
+        headerTitle.textContent = "EDIT REPORT";
+        saveReportBtn.textContent = "Update";
+      }else{
+        headerTitle.textContent = "NEW REPORT";
+        saveReportBtn.textContent = "Save";
+      }
+    }
+
+    function formatDateInputToday(){
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      document.getElementById("date").value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function renderEnrollmentFields(count){
+      enrollmentContainer.innerHTML = "";
+      const total = Math.max(0, Number(count) || 0);
+
+      for(let i = 1; i <= total; i++){
+        const box = document.createElement("div");
+        box.className = "enrollment-item";
+        box.innerHTML = `
+          <div class="enrollment-title">Enrollment ${i}</div>
+          <label>Enrollment name</label>
+          <input type="text" class="enrollment-name" data-index="${i}" placeholder="Enter name" />
+          <label>Amount</label>
+          <input type="number" class="enrollment-amount" data-index="${i}" min="0" value="0" />
+        `;
+        enrollmentContainer.appendChild(box);
+      }
+
+      attachZeroClearInputs(enrollmentContainer.querySelectorAll('input[type="number"]'));
+    }
+
+    function getEnrollmentData(){
+      const names = [...document.querySelectorAll(".enrollment-name")];
+      const amounts = [...document.querySelectorAll(".enrollment-amount")];
+
+      return names.map((nameInput, index) => ({
+        name: nameInput.value.trim(),
+        amount: Number(amounts[index]?.value || 0)
+      })).filter(item => item.name || item.amount);
+    }
+
+    function fillEnrollmentData(enrollments = []){
+      const valid = Array.isArray(enrollments) ? enrollments : [];
+      renderEnrollmentFields(valid.length);
+      document.getElementById("dd").value = valid.length;
+
+      const nameInputs = [...document.querySelectorAll(".enrollment-name")];
+      const amountInputs = [...document.querySelectorAll(".enrollment-amount")];
+
+      valid.forEach((item, index) => {
+        if(nameInputs[index]) nameInputs[index].value = item?.name || "";
+        if(amountInputs[index]) amountInputs[index].value = item?.amount ?? 0;
+      });
+    }
+
+    function attachZeroClearInputs(targets = document.querySelectorAll('input[type="number"]')){
+      targets.forEach(input => {
+        if(input.dataset.zeroHandlerAttached === "true") return;
+        input.dataset.zeroHandlerAttached = "true";
+
+        input.addEventListener("focus", () => {
+          if(input.value === "0"){
+            input.value = "";
+          }
+        });
+
+        input.addEventListener("blur", () => {
+          if(input.value.trim() === ""){
+            input.value = "0";
+          }
+        });
+      });
+    }
+
+    function smartDate(input){
+      input = input.trim();
+      if(/^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
+
+      if(/^\d{2}\/\d{2}\/\d{2,4}$/.test(input)){
+        const [d,m,y] = input.split("/");
+        const year = y.length === 2 ? `20${y}` : y;
+        return `${year}-${m}-${d}`;
+      }
+      return "";
+    }
+
+    function normalizeTimeValue(value){
+      if(!value) return "";
+      let v = value.trim().toLowerCase().replace(/\./g, "");
+
+      if(/^\d{2}:\d{2}$/.test(v)) return v;
+
+      const ampmMatch = v.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/);
+      if(ampmMatch){
+        let hours = Number(ampmMatch[1]);
+        const minutes = ampmMatch[2] || "00";
+        const ampm = ampmMatch[3];
+
+        if(ampm === "pm" && hours !== 12) hours += 12;
+        if(ampm === "am" && hours === 12) hours = 0;
+
+        return `${String(hours).padStart(2,"0")}:${minutes}`;
+      }
+
+      return "";
+    }
+
+    function formatTimeDisplay(time24){
+      if(!time24) return "";
+      const [hh, mm] = time24.split(":");
+      let hours = Number(hh);
+      const minutes = mm || "00";
+      const ampm = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      return `${hours}:${minutes} ${ampm}`;
+    }
+
+    function extractTimeFromLine(line){
+      const raw = line.toLowerCase().trim().replace(/\./g, "");
+      const timeRegex = /(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/g;
+      const matches = raw.match(timeRegex) || [];
+
+      if(matches.length >= 2){
+        return {
+          from: normalizeTimeValue(matches[0]),
+          to: normalizeTimeValue(matches[1])
+        };
+      }
+
+      return { from: "", to: "" };
+    }
+
+    function buildTimeRange(){
+      const from = document.getElementById("timeFrom").value || "";
+      const to = document.getElementById("timeTo").value || "";
+
+      if(from && to) return `${formatTimeDisplay(from)} to ${formatTimeDisplay(to)}`;
+      if(from) return formatTimeDisplay(from);
+      if(to) return formatTimeDisplay(to);
+      return "";
+    }
+
+    function updateTimeBoxState(){
+      timeFromBox.classList.toggle("has-value", !!timeFrom.value);
+      timeToBox.classList.toggle("has-value", !!timeTo.value);
+    }
+
+    function resetReportForm(){
+      isEditMode = false;
+      editingReportId = "";
+      clearEditModeSource();
+      setEditModeUI();
+
+      formatDateInputToday();
+      document.getElementById("timeFrom").value = "";
+      document.getElementById("timeTo").value = "";
+      [
+        "friendRequest","accept","message","reply","chatting","discussWork",
+        "mobileNumberCount","invitation","confirm","stp","followUp","dd"
+      ].forEach(id => document.getElementById(id).value = 0);
+
+      quickPaste.value = "";
+      renderEnrollmentFields(0);
+      updateTimeBoxState();
+      attachZeroClearInputs();
+    }
+
+    function getMissingFields(data){
+      const missing = [];
+
+      if(!data.date) missing.push("Date");
+      if(!data.timeFrom) missing.push("Time From");
+      if(!data.timeTo) missing.push("Time To");
+      if(!(data.friendRequest > 0)) missing.push("Friend request");
+      if(!(data.accept > 0)) missing.push("Accept");
+      if(!(data.message > 0)) missing.push("Message");
+      if(!(data.reply > 0)) missing.push("Reply");
+      if(!(data.chatting > 0)) missing.push("Chatting");
+      if(!(data.discussWork > 0)) missing.push("Discuss work (K.K)");
+      if(!(data.mobileNumber > 0)) missing.push("Mobile number");
+      if(!(data.invitation > 0)) missing.push("Invitation");
+      if(!(data.confirm > 0)) missing.push("Confirm");
+
+      return missing;
+    }
+
+    function fillFieldValue(id, value){
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.value = value;
+    }
+
+    function fillReportForm(data){
+      fillFieldValue("date", data.date || "");
+      fillFieldValue("timeFrom", data.timeFrom || "");
+      fillFieldValue("timeTo", data.timeTo || "");
+
+      fillFieldValue("friendRequest", Number(data.friendRequest || 0));
+      fillFieldValue("accept", Number(data.accept || 0));
+      fillFieldValue("message", Number(data.message || 0));
+      fillFieldValue("reply", Number(data.reply || 0));
+      fillFieldValue("chatting", Number(data.chatting || 0));
+      fillFieldValue("discussWork", Number(data.discussWork || 0));
+      fillFieldValue("mobileNumberCount", Number(data.mobileNumber || 0));
+      fillFieldValue("invitation", Number(data.invitation || 0));
+      fillFieldValue("confirm", Number(data.confirm || 0));
+      fillFieldValue("stp", Number(data.stp || 0));
+      fillFieldValue("followUp", Number(data.followUp || 0));
+      fillFieldValue("dd", Number(data.dd || 0));
+
+      fillEnrollmentData(data.enrollments || []);
+      updateTimeBoxState();
+    }
+
+    async function loadEditReportIfNeeded(user){
+      if(initialEditLoaded) return;
+      initialEditLoaded = true;
+
+      const reportId = getEditReportIdFromSource();
+      if(!reportId){
+        isEditMode = false;
+        editingReportId = "";
+        setEditModeUI();
+        formatDateInputToday();
+        renderEnrollmentFields(0);
+        attachZeroClearInputs();
+        updateTimeBoxState();
+        return;
+      }
+
+      try{
+        const reportRef = doc(db, "reports", reportId);
+        const reportSnap = await getDoc(reportRef);
+
+        if(!reportSnap.exists()){
+          isEditMode = false;
+          editingReportId = "";
+          clearEditModeSource();
+          setEditModeUI();
+          formatDateInputToday();
+          renderEnrollmentFields(0);
+          attachZeroClearInputs();
+          updateTimeBoxState();
+          openPopup("Error", "Report not found");
+          return;
+        }
+
+        const reportData = reportSnap.data();
+
+        if(reportData.userId !== user.uid){
+          isEditMode = false;
+          editingReportId = "";
+          clearEditModeSource();
+          setEditModeUI();
+          formatDateInputToday();
+          renderEnrollmentFields(0);
+          attachZeroClearInputs();
+          updateTimeBoxState();
+          openPopup("Error", "You cannot edit this report");
+          return;
+        }
+
+        isEditMode = true;
+        editingReportId = reportId;
+        setEditModeUI();
+        fillReportForm(reportData);
+        attachZeroClearInputs();
+      } catch(error){
+        isEditMode = false;
+        editingReportId = "";
+        clearEditModeSource();
+        setEditModeUI();
+        formatDateInputToday();
+        renderEnrollmentFields(0);
+        attachZeroClearInputs();
+        updateTimeBoxState();
+        openPopup("Error", "Failed to load report");
+      }
+    }
+
+    async function findDuplicateReport(userId, selectedDate){
+      const q = query(collection(db, "reports"), where("userId", "==", userId));
+      const snap = await getDocs(q);
+
+      let duplicate = null;
+      snap.forEach(docSnap => {
+        const data = docSnap.data();
+        if(data.date === selectedDate){
+          if(isEditMode && docSnap.id === editingReportId){
+            return;
+          }
+          duplicate = {
+            id: docSnap.id,
+            ...data
+          };
+        }
+      });
+
+      return duplicate;
+    }
+
+    parsePasteBtn.addEventListener("click", () => {
+      const raw = quickPaste.value.trim();
+      if(!raw){
+        openPopup("Error", "Paste report box is empty");
+        return;
+      }
+
+      const lines = raw.split(/\n+/).map(x => x.trim()).filter(Boolean);
+
+      const aliasMap = {
+        "friend request":"friendRequest",
+        "fr":"friendRequest",
+        "accept":"accept",
+        "acp":"accept",
+        "ac":"accept",
+        "message":"message",
+        "sms":"message",
+        "reply":"reply",
+        "rep":"reply",
+        "rp":"reply",
+        "chatting":"chatting",
+        "ch":"chatting",
+        "discuss work (k.k)":"discussWork",
+        "discuss work k.k":"discussWork",
+        "discuss work":"discussWork",
+        "k.k":"discussWork",
+        "kk":"discussWork",
+        "mobile number":"mobileNumberCount",
+        "mob":"mobileNumberCount",
+        "mobile":"mobileNumberCount",
+        "invitation":"invitation",
+        "in":"invitation",
+        "inv":"invitation",
+        "confirm":"confirm",
+        "cnfrm":"confirm",
+        "confirmd":"confirm",
+        "cnf":"confirm",
+        "stp":"stp",
+        "follow up":"followUp",
+        "followup":"followUp",
+        "enrollment (d.d)":"dd",
+        "d.d":"dd",
+        "dd":"dd"
+      };
+
+      for(const line of lines){
+        const clean = line.replace(/[|]/g, " ").trim();
+        const lower = clean.toLowerCase();
+
+        if(lower.startsWith("date")){
+          const dateVal = clean.split(/[:➜\-]/).slice(1).join(" ").trim() || clean.replace(/date/i, "").trim();
+          const parsedDate = smartDate(dateVal);
+          if(parsedDate) fillFieldValue("date", parsedDate);
+          continue;
+        }
+
+        if(lower.startsWith("time")){
+          const timeParts = extractTimeFromLine(clean);
+          if(timeParts.from) fillFieldValue("timeFrom", timeParts.from);
+          if(timeParts.to) fillFieldValue("timeTo", timeParts.to);
+          continue;
+        }
+
+        if(lower.startsWith("from")){
+          const part = clean.replace(/from/i, "").replace(/[:➜\-]/g, " ").trim();
+          const parsed = normalizeTimeValue(part);
+          if(parsed) fillFieldValue("timeFrom", parsed);
+          continue;
+        }
+
+        if(lower.startsWith("to")){
+          const part = clean.replace(/^to/i, "").replace(/[:➜\-]/g, " ").trim();
+          const parsed = normalizeTimeValue(part);
+          if(parsed) fillFieldValue("timeTo", parsed);
+          continue;
+        }
+
+        const normalizedLine = lower.replace(/[:➜\-]/g, " ").replace(/\s+/g, " ").trim();
+
+        for(const key in aliasMap){
+          if(normalizedLine.startsWith(key + " ") || normalizedLine === key){
+            const numberMatch = normalizedLine.match(/(\d+)/);
+            if(numberMatch){
+              const targetId = aliasMap[key];
+              fillFieldValue(targetId, Number(numberMatch[1]));
+
+              if(targetId === "dd"){
+                renderEnrollmentFields(Number(numberMatch[1]));
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      [
+        "friendRequest","accept","message","reply","chatting","discussWork",
+        "mobileNumberCount","invitation","confirm","stp","followUp","dd"
+      ].forEach(id => {
+        const el = document.getElementById(id);
+        if(el.value === "") el.value = 0;
+      });
+
+      updateTimeBoxState();
+      showMsg(saveMsg, "Pasted report applied successfully", "var(--good)");
+    });
+
+    document.getElementById("dd").addEventListener("input", (e) => {
+      const count = Number(e.target.value || 0);
+      renderEnrollmentFields(count);
+    });
+
+    saveReportBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if(!user){
+        openPopup("Error", "Please login first", {
+          onOk: () => {
+            isProgrammaticNavigation = true;
+            location.href = "index.html";
+          }
+        });
+        return;
+      }
+
+      const data = {
+        date: document.getElementById("date").value,
+        timeFrom: document.getElementById("timeFrom").value || "",
+        timeTo: document.getElementById("timeTo").value || "",
+        time: buildTimeRange(),
+        friendRequest: Number(document.getElementById("friendRequest").value || 0),
+        accept: Number(document.getElementById("accept").value || 0),
+        message: Number(document.getElementById("message").value || 0),
+        reply: Number(document.getElementById("reply").value || 0),
+        chatting: Number(document.getElementById("chatting").value || 0),
+        discussWork: Number(document.getElementById("discussWork").value || 0),
+        mobileNumber: Number(document.getElementById("mobileNumberCount").value || 0),
+        invitation: Number(document.getElementById("invitation").value || 0),
+        confirm: Number(document.getElementById("confirm").value || 0),
+        stp: Number(document.getElementById("stp").value || 0),
+        followUp: Number(document.getElementById("followUp").value || 0),
+        dd: Number(document.getElementById("dd").value || 0),
+        enrollments: getEnrollmentData()
+      };
+
+      const missingFields = getMissingFields(data);
+
+      if(missingFields.length > 0){
+        openPopup(
+          "Incomplete Form",
+          "Please fill these fields:\n" + missingFields.join("\n")
+        );
+        return;
+      }
+
+      saveReportBtn.disabled = true;
+      showMsg(saveMsg, "");
+
+      openPopup(isEditMode ? "Updating" : "Saving", isEditMode ? "Updating your report..." : "Saving your report...", {
+        mode: "loading"
+      });
+
+      try{
+        const duplicateReport = await findDuplicateReport(user.uid, data.date);
+        if(duplicateReport){
+          closePopup();
+          openPopup("Duplicate Report", "A report for this date already exists");
+          saveReportBtn.disabled = false;
+          return;
+        }
+
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        const mobile = userDoc.exists() ? (userDoc.data().mobile || "") : "";
+
+        if(isEditMode && editingReportId){
+          await updateDoc(doc(db, "reports", editingReportId), {
+            mobile,
+            ...data,
+            updatedAt: serverTimestamp()
+          });
+
+          closePopup();
+          openPopup("Updated", "Report updated successfully", {
+            onOk: () => {
+              resetReportForm();
+            }
+          });
+        } else {
+          await addDoc(collection(db, "reports"), {
+            userId: user.uid,
+            mobile,
+            ...data,
+            createdAt: serverTimestamp()
+          });
+
+          closePopup();
+          openPopup("Saved", "Saved successfully", {
+            onOk: () => {
+              resetReportForm();
+            }
+          });
+        }
+      } catch(error){
+        closePopup();
+        openPopup("Error", isEditMode ? "Update failed" : "Save failed");
+      } finally {
+        saveReportBtn.disabled = false;
+      }
+    });
+
+    timeFrom.addEventListener("focus", () => {
+      timeFromBox.classList.add("active");
+    });
+
+    timeTo.addEventListener("focus", () => {
+      timeToBox.classList.add("active");
+    });
+
+    timeFrom.addEventListener("blur", () => {
+      timeFromBox.classList.remove("active");
+      updateTimeBoxState();
+    });
+
+    timeTo.addEventListener("blur", () => {
+      timeToBox.classList.remove("active");
+      updateTimeBoxState();
+    });
+
+    timeFrom.addEventListener("input", updateTimeBoxState);
+    timeTo.addEventListener("input", updateTimeBoxState);
+
+    window.addEventListener("popstate", () => {
+      if(ignoreNextDrawerPop){
+        ignoreNextDrawerPop = false;
+        return;
+      }
+
+      if(popup.classList.contains("show")){
+        closePopup();
+        return;
+      }
+
+      if(drawer.classList.contains("open")){
+        closeDrawer(true);
+        return;
+      }
+
+      if(!isProgrammaticNavigation){
+        isProgrammaticNavigation = true;
+        location.href = "index.html";
+      }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if(!user){
+        if(!isProgrammaticNavigation){
+          isProgrammaticNavigation = true;
+          location.href = "index.html";
+        }
+        return;
+      }
+
+      setEditModeUI();
+      await loadEditReportIfNeeded(user);
+
+      if(!isEditMode){
+        formatDateInputToday();
+        renderEnrollmentFields(0);
+        attachZeroClearInputs();
+        updateTimeBoxState();
+      } else {
+        attachZeroClearInputs();
+        updateTimeBoxState();
+      }
+    });
+  </script>
+</body>
+</html>
