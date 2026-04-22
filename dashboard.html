@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>My Activity</title>
+
+  <style>
+    :root{
+      --bg1:#6a5cff;
+      --bg2:#8b7bff;
+      --card:#f6f4ff;
+      --card-border:rgba(255,255,255,0.9);
+      --card-shadow:
+        0 0 0 1px rgba(255,255,255,0.22),
+        0 18px 35px rgba(0,0,0,0.18),
+        0 28px 70px rgba(0,0,0,0.28),
+        0 8px 18px rgba(103,79,255,0.18);
+      --text:#141b2d;
+      --muted:#667085;
+      --line:#e8e6f5;
+      --primary:#6a5cff;
+      --primary2:#8b7bff;
+      --green1:#a7f06b;
+      --green2:#7dffb2;
+      --danger:#ff5c7a;
+      --warn:#ffb020;
+      --input:#ffffff;
+    }
+
+    html[data-theme="light"]{
+      --bg1:#6a5cff;
+      --bg2:#8b7bff;
+      --card:#f6f4ff;
+      --card-border:rgba(255,255,255,0.9);
+      --card-shadow:
+        0 0 0 1px rgba(255,255,255,0.22),
+        0 18px 35px rgba(0,0,0,0.18),
+        0 28px 70px rgba(0,0,0,0.28),
+        0 8px 18px rgba(103,79,255,0.18);
+      --text:#141b2d;
+      --muted:#667085;
+      --line:#e8e6f5;
+      --primary:#6a5cff;
+      --primary2:#8b7bff;
+      --input:#ffffff;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    *:focus,*:active{
+      outline:none !important;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body{
+      overscroll-behavior:none;
+    }
+
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.22), transparent 18%),
+        radial-gradient(circle at top right, rgba(255,255,255,0.14), transparent 20%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+      opacity:1;
+      transition:opacity .22s ease;
+    }
+
+    body.page-leave{
+      opacity:0;
+    }
+
+    .app{
+      max-width:480px;
+      margin:0 auto;
+      min-height:100vh;
+      padding:16px;
+      position:relative;
+    }
+
+    .hidden{display:none !important}
+
+    .sticky-topbar{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      width:100%;
+      max-width:480px;
+      margin:0 auto;
+      z-index:999;
+      padding:10px 16px 12px;
+      background:linear-gradient(135deg, #8b7bff, #7b6cff);
+      border-bottom:1px solid rgba(255,255,255,0.28);
+      box-shadow:
+        0 8px 18px rgba(0,0,0,0.14),
+        inset 0 1px 0 rgba(255,255,255,0.35);
+      border-bottom-left-radius:24px;
+      border-bottom-right-radius:24px;
+      overflow:hidden;
+      animation:none !important;
+      transform:none !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+      will-change:auto;
+      backface-visibility:hidden;
+      -webkit-backface-visibility:hidden;
+    }
+
+    #dashboardScreen{
+      padding-top:168px;
+    }
+
+    .header-bar{
+      display:grid;
+      grid-template-columns:44px 1fr 44px;
+      align-items:center;
+      gap:8px;
+      width:100%;
+    }
+
+    .icon-btn{
+      width:44px;
+      height:44px;
+      border:none;
+      border-radius:16px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.12));
+      color:#ffffff;
+      border:1px solid rgba(255,255,255,0.28);
+      box-shadow:
+        0 10px 24px rgba(0,0,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.35);
+      font-size:20px;
+      font-weight:900;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
+      transition:transform .16s ease, opacity .16s ease;
+    }
+
+    .icon-btn:active{
+      transform:scale(.97);
+    }
+
+    .header-title{
+      min-width:0;
+      width:100%;
+      text-align:center;
+      font-size:16px;
+      font-weight:900;
+      margin:0;
+      letter-spacing:.8px;
+      color:#ffffff;
+      text-shadow:0 2px 10px rgba(0,0,0,0.18);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .tabs-wrap{
+      margin-top:12px;
+    }
+
+    .tabs{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:8px;
+      margin:0;
+      background:linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.10));
+      border:1px solid rgba(255,255,255,0.28);
+      box-shadow:
+        0 8px 18px rgba(0,0,0,0.14),
+        inset 0 1px 0 rgba(255,255,255,0.35);
+      border-radius:24px;
+      padding:8px;
+    }
+
+    .tab{
+      border:none;
+      background:linear-gradient(180deg, #ffffff 0%, #f3f0ff 100%);
+      color:var(--primary);
+      border:1px solid #e8e3ff;
+      border-radius:16px;
+      padding:12px 8px;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 10px 20px rgba(17,24,39,0.05), inset 0 1px 0 rgba(255,255,255,0.9);
+      transition:transform .18s ease, box-shadow .18s ease;
+    }
+
+    .tab:active{
+      transform:scale(.98);
+    }
+
+    .tab.active{
+      color:#172100;
+      background:linear-gradient(135deg,var(--green1),var(--green2));
+      border-color:transparent;
+      box-shadow:0 14px 28px rgba(125,255,178,0.26), inset 0 1px 0 rgba(255,255,255,0.55);
+    }
+
+    .list-card{
+      width:100%;
+      background:linear-gradient(180deg, #faf9ff 0%, #f2efff 100%);
+      border:1px solid var(--card-border);
+      border-radius:30px;
+      padding:18px 16px;
+      box-shadow:var(--card-shadow);
+      position:relative;
+      overflow:hidden;
+      margin-bottom:16px;
+      animation:cardEnter .26s ease-out;
+    }
+
+    .list-card::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 14% 10%, rgba(255,255,255,0.95), transparent 20%),
+        linear-gradient(180deg, rgba(255,255,255,0.55), transparent 28%);
+      pointer-events:none;
+    }
+
+    .list-card > *{
+      position:relative;
+      z-index:1;
+    }
+
+    .line-report{
+      line-height:1.6;
+      font-size:15px;
+      white-space:pre-wrap;
+      word-break:break-word;
+      overflow-wrap:anywhere;
+      color:var(--text);
+      font-weight:700;
+    }
+
+    .report-heading{
+      font-size:16px;
+      font-weight:900;
+      margin-bottom:8px;
+      line-height:1.45;
+      white-space:normal;
+      color:var(--text);
+    }
+
+    .report-heading.daily-heading{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .empty{
+      text-align:center;
+      color:var(--muted);
+      padding:24px 10px;
+      font-size:14px;
+      font-weight:800;
+    }
+
+    .filter-popup{
+      position:fixed;
+      top:84px;
+      right:16px;
+      width:260px;
+      background:linear-gradient(180deg, #faf9ff 0%, #f3efff 100%);
+      border:1px solid rgba(255,255,255,0.95);
+      border-radius:26px;
+      padding:16px;
+      z-index:2000;
+      box-shadow:0 28px 70px rgba(0,0,0,0.20), 0 12px 30px rgba(93,76,255,0.14);
+      overflow:hidden;
+    }
+
+    .filter-popup::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.95), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.45), transparent 28%);
+      pointer-events:none;
+    }
+
+    .filter-popup > *{
+      position:relative;
+      z-index:1;
+    }
+
+    label{
+      display:block;
+      margin:12px 0 7px;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:800;
+    }
+
+    input, select{
+      width:100%;
+      border:none;
+      background:linear-gradient(180deg, #ffffff 0%, #fbfbff 100%);
+      color:var(--text);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:14px;
+      font-size:15px;
+      font-weight:700;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.95), 0 4px 12px rgba(17,24,39,0.04);
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    input:focus, select:focus{
+      transform:translateY(-1px);
+      border-color:#b8adff;
+      box-shadow:
+        0 10px 22px rgba(93,76,255,0.10),
+        inset 0 1px 0 rgba(255,255,255,1);
+    }
+
+    .btn{
+      width:100%;
+      border:none;
+      border-radius:20px;
+      padding:14px 16px;
+      margin-top:14px;
+      font-size:15px;
+      font-weight:900;
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    }
+
+    .btn:active{
+      transform:scale(.98);
+    }
+
+    .btn-primary{
+      color:#ffffff;
+      background:linear-gradient(135deg,#6a5cff,#8b7bff);
+      box-shadow:0 14px 28px rgba(106,92,255,0.26), inset 0 1px 0 rgba(255,255,255,0.28);
+    }
+
+    .btn-secondary{
+      color:var(--primary);
+      background:linear-gradient(180deg, #ffffff 0%, #f3f0ff 100%);
+      border:1px solid #e8e3ff;
+      box-shadow:0 10px 20px rgba(17,24,39,0.05), inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+.share-btn{
+  margin-top:14px;
+  color:#ffffff;
+  background:linear-gradient(135deg,#00c853,#00e676);
+  box-shadow:0 14px 28px rgba(0,200,83,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+  border:none;
+  border-radius:20px;
+  font-weight:900;
+}
+
+.share-btn:active{
+  transform:scale(.96);
+}
+
+    .small-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .small-btn{
+      margin-top:0;
+      padding:11px 10px;
+      font-size:13px;
+      border-radius:16px;
+    }
+
+    .btn-edit{
+      color:#ffffff;
+      background:linear-gradient(135deg,#6a5cff,#8b7bff);
+      box-shadow:0 10px 20px rgba(106,92,255,0.22), inset 0 1px 0 rgba(255,255,255,0.28);
+    }
+
+    .btn-delete{
+      color:#ffffff;
+      background:linear-gradient(135deg,#ff5c7a,#ff7b95);
+      box-shadow:0 10px 20px rgba(255,92,122,0.22), inset 0 1px 0 rgba(255,255,255,0.28);
+    }
+
+    .popup{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.22);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:3000;
+    }
+
+    .popup.show{
+      display:flex;
+      animation:popupFade .18s ease;
+    }
+
+    .popup-card{
+      width:100%;
+      max-width:340px;
+      background:linear-gradient(180deg, #faf9ff 0%, #f3efff 100%);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,0.95);
+      border-radius:30px;
+      padding:24px;
+      text-align:center;
+      box-shadow:0 28px 70px rgba(0,0,0,0.20), 0 12px 30px rgba(93,76,255,0.14);
+      position:relative;
+      overflow:hidden;
+      animation:popupUp .18s ease;
+    }
+
+    .popup-card::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.95), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.45), transparent 28%);
+      pointer-events:none;
+    }
+
+    .popup-card > *{
+      position:relative;
+      z-index:1;
+    }
+
+    .popup-circle{
+      width:74px;
+      height:74px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#11b978,#18d18b);
+      margin:0 auto 14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:34px;
+      font-weight:900;
+      box-shadow:0 14px 30px rgba(17,185,120,0.28), inset 0 1px 0 rgba(255,255,255,0.45);
+    }
+
+    .popup-card h3{
+      margin:0 0 8px;
+      font-size:22px;
+    }
+
+    .popup-card p{
+      margin:0 0 14px;
+      color:var(--muted);
+      line-height:1.5;
+      white-space:pre-wrap;
+      font-weight:700;
+    }
+
+    .popup-btn-row{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .popup-btn-row .btn{
+      margin-top:0;
+      flex:1;
+    }
+
+    @keyframes cardEnter{
+      from{opacity:0; transform:translateY(10px)}
+      to{opacity:1; transform:translateY(0)}
+    }
+
+    @keyframes popupFade{
+      from{opacity:0}
+      to{opacity:1}
+    }
+
+    @keyframes popupUp{
+      from{opacity:0; transform:translateY(8px) scale(.985)}
+      to{opacity:1; transform:translateY(0) scale(1)}
+    }
+  </style>
+</head>
+<body>
+  <div class="popup" id="popup">
+    <div class="popup-card">
+      <div class="popup-circle" id="popupCircle">✓</div>
+      <h3 id="popupTitle">Success</h3>
+      <p id="popupText">Done</p>
+      <div class="popup-btn-row">
+        <button class="btn btn-secondary hidden" id="popupCancelBtn">No</button>
+        <button class="btn btn-primary" id="popupOkBtn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+    <section id="dashboardScreen">
+      <div class="sticky-topbar">
+        <div class="header-bar">
+          <button class="icon-btn" id="backToReportBtn">⬅️</button>
+          <h2 class="header-title">DASHBOARD</h2>
+          <button class="icon-btn" id="filterBtn">⚙️</button>
+        </div>
+
+        <div class="tabs-wrap">
+          <div class="tabs">
+            <button class="tab active" data-tab="daily">Daily</button>
+            <button class="tab" data-tab="weekly">Weekly</button>
+            <button class="tab" data-tab="monthly">Monthly</button>
+            <button class="tab" data-tab="total">Total</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="filterPopup" class="filter-popup hidden">
+        <label>Date</label>
+        <input type="date" id="filterDate" />
+
+        <label>Report Type</label>
+        <select id="filterType">
+          <option value="">Select report type</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+
+        <button class="btn btn-primary" id="applyFilterBtn">Search</button>
+        <button class="btn btn-secondary" id="resetFilterBtn">Reset</button>
+      </div>
+
+      <div id="dashboardContent"></div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      query,
+      where,
+      getDocs,
+      doc,
+      deleteDoc
+    } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAywuz35rfyqnUsMy6sgCSqYFzZUuPl1n8",
+      authDomain: "my-activity-f1bb0.firebaseapp.com",
+      projectId: "my-activity-f1bb0",
+      storageBucket: "my-activity-f1bb0.firebasestorage.app",
+      messagingSenderId: "354523125344",
+      appId: "1:354523125344:web:6aede87ba0fee2774ed505"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const backToReportBtn = document.getElementById("backToReportBtn");
+    const dashboardContent = document.getElementById("dashboardContent");
+    const tabButtons = document.querySelectorAll(".tab");
+    const filterBtn = document.getElementById("filterBtn");
+    const filterPopup = document.getElementById("filterPopup");
+    const applyFilterBtn = document.getElementById("applyFilterBtn");
+    const resetFilterBtn = document.getElementById("resetFilterBtn");
+    const filterDate = document.getElementById("filterDate");
+    const filterType = document.getElementById("filterType");
+
+    const popup = document.getElementById("popup");
+    const popupTitle = document.getElementById("popupTitle");
+    const popupText = document.getElementById("popupText");
+    const popupCircle = document.getElementById("popupCircle");
+    const popupOkBtn = document.getElementById("popupOkBtn");
+    const popupCancelBtn = document.getElementById("popupCancelBtn");
+
+    let currentTab = "daily";
+    let allReports = [];
+    let currentFilterDate = "";
+    let renderedShareItems = [];
+    let popupOkAction = null;
+    let popupCancelAction = null;
+    let handlingPopState = false;
+
+    history.replaceState({ page: "dashboard" }, "");
+
+    function navigateSmooth(url, replace = false){
+      document.body.classList.add("page-leave");
+      setTimeout(() => {
+        if(replace){
+          location.replace(url);
+        }else{
+          location.href = url;
+        }
+      }, 180);
+    }
+
+    function openPopup(title, text, options = {}){
+      const {
+        onOk = null,
+        onCancel = null,
+        okText = "OK",
+        cancelText = "No",
+        showCancel = false,
+        isDanger = false
+      } = options;
+
+      popupTitle.textContent = title;
+      popupText.textContent = text;
+      popupOkBtn.textContent = okText;
+      popupCancelBtn.textContent = cancelText;
+      popupCancelBtn.classList.toggle("hidden", !showCancel);
+      popupCircle.textContent = isDanger ? "!" : "✓";
+      popup.classList.add("show");
+
+      popupOkAction = onOk;
+      popupCancelAction = onCancel;
+    }
+
+    function closePopup(){
+      popup.classList.remove("show");
+      popupOkAction = null;
+      popupCancelAction = null;
+    }
+
+    popupOkBtn.addEventListener("click", () => {
+      popup.classList.remove("show");
+      if(typeof popupOkAction === "function"){
+        popupOkAction();
+      }
+      popupOkAction = null;
+      popupCancelAction = null;
+    });
+
+    popupCancelBtn.addEventListener("click", () => {
+      popup.classList.remove("show");
+      if(typeof popupCancelAction === "function"){
+        popupCancelAction();
+      }
+      popupOkAction = null;
+      popupCancelAction = null;
+    });
+
+    function openFilterPopup(){
+      filterPopup.classList.remove("hidden");
+      history.pushState({ page: "filter" }, "");
+    }
+
+    function closeFilterPopup(useHistoryBack = false){
+      if(filterPopup.classList.contains("hidden")) return;
+      filterPopup.classList.add("hidden");
+
+      if(useHistoryBack && history.state && history.state.page === "filter"){
+        handlingPopState = true;
+        history.back();
+      }
+    }
+
+    backToReportBtn.addEventListener("click", () => {
+      navigateSmooth("report.html");
+    });
+
+    filterBtn.addEventListener("click", () => {
+      if(filterPopup.classList.contains("hidden")){
+        openFilterPopup();
+      }else{
+        closeFilterPopup(true);
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      const clickedFilterBtn = filterBtn.contains(e.target);
+      const clickedInsidePopup = filterPopup.contains(e.target);
+
+      if(
+        !filterPopup.classList.contains("hidden") &&
+        !clickedInsidePopup &&
+        !clickedFilterBtn
+      ){
+        closeFilterPopup(false);
+      }
+    });
+
+    applyFilterBtn.addEventListener("click", () => {
+      currentFilterDate = filterDate.value || "";
+      if(filterType.value){
+        currentTab = filterType.value;
+        setActiveTab();
+      }
+      renderDashboard(currentFilterDate);
+      closeFilterPopup(true);
+    });
+
+    resetFilterBtn.addEventListener("click", () => {
+      currentFilterDate = "";
+      filterDate.value = "";
+      filterType.value = "";
+      currentTab = "daily";
+      setActiveTab();
+      renderDashboard("");
+      closeFilterPopup(true);
+    });
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentTab = btn.dataset.tab;
+        setActiveTab();
+        renderDashboard(currentFilterDate);
+      });
+    });
+
+    window.addEventListener("popstate", () => {
+      if(handlingPopState){
+        handlingPopState = false;
+        return;
+      }
+
+      if(!filterPopup.classList.contains("hidden")){
+        filterPopup.classList.add("hidden");
+        return;
+      }
+
+      navigateSmooth("report.html");
+    });
+
+    function setActiveTab(){
+      tabButtons.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === currentTab);
+      });
+    }
+
+    async function loadReports(){
+      const user = auth.currentUser;
+      if(!user) return;
+
+      const q = query(collection(db, "reports"), where("userId", "==", user.uid));
+      const snap = await getDocs(q);
+
+      allReports = [];
+      snap.forEach(docSnap => {
+        allReports.push({ id: docSnap.id, ...docSnap.data() });
+      });
+
+      allReports.sort((a, b) => {
+        const ad = a.date || "";
+        const bd = b.date || "";
+        return bd.localeCompare(ad);
+      });
+    }
+
+    function renderDashboard(filterDate = ""){
+      if(currentTab === "daily"){
+        renderDaily(filterDate);
+      }else if(currentTab === "weekly"){
+        renderWeekly(filterDate);
+      }else if(currentTab === "monthly"){
+        renderMonthly(filterDate);
+      }else{
+        renderTotal();
+      }
+    }
+
+    function getItemTime(item){
+      if(item.time && item.time.trim()) return item.time;
+      if(item.timeFrom && item.timeTo) return `${formatTimeDisplay(item.timeFrom)} to ${formatTimeDisplay(item.timeTo)}`;
+      if(item.timeFrom) return formatTimeDisplay(item.timeFrom);
+      if(item.timeTo) return formatTimeDisplay(item.timeTo);
+      return "-";
+    }
+
+    function renderDaily(filterDate = ""){
+      let list = [...allReports];
+
+      if(filterDate){
+        list = list.filter(item => item.date === filterDate);
+      }
+
+      if(list.length === 0){
+        dashboardContent.innerHTML = `<div class="list-card empty">No report</div>`;
+        renderedShareItems = [];
+        return;
+      }
+
+      renderedShareItems = list.map(item => ({ type: "daily", data: item }));
+
+      dashboardContent.innerHTML = list.map((item, index) => `
+        <div class="list-card">
+          <div class="line-report"><div class="report-heading daily-heading">DAILY REPORTING || DATE➜ ${shortDateDisplay(item.date)}</div>━━━━━━━━━━━━━━━━━━
+Time➜ ${getItemTime(item)}
+Friend Request➜ ${item.friendRequest || 0}
+Accept➜ ${item.accept || 0}
+Message➜ ${item.message || 0}
+Reply➜ ${item.reply || 0}
+Chatting➜ ${item.chatting || 0}
+Discuss Work (K.K)➜ ${item.discussWork || 0}
+Mobile Number➜ ${item.mobileNumber || 0}
+Invitation➜ ${item.invitation || 0}
+Confirm➜ ${item.confirm || 0}
+Stp➜ ${item.stp || 0}
+Follow Up➜ ${item.followUp || 0}
+Enrollment (D.D)➜ ${item.dd || 0}
+${buildEnrollmentLines(item.enrollments)}</div>
+
+          <button class="btn share-btn" data-share-index="${index}">Share</button>
+
+          <div class="small-actions">
+            <button class="btn small-btn btn-edit" data-edit-id="${item.id}">Edit</button>
+            <button class="btn small-btn btn-delete" data-delete-id="${item.id}">Delete</button>
+          </div>
+        </div>
+      `).join("");
+
+      attachActionButtons();
+    }
+
+    function renderWeekly(filterDate = ""){
+      const weeklyGroups = buildWeeklyGroups(allReports, filterDate);
+
+      if(weeklyGroups.length === 0){
+        dashboardContent.innerHTML = `<div class="list-card empty">No report</div>`;
+        renderedShareItems = [];
+        return;
+      }
+
+      renderedShareItems = weeklyGroups.map(group => ({ type: "weekly", data: group }));
+
+      dashboardContent.innerHTML = weeklyGroups.map((group, index) => `
+        <div class="list-card">
+          <div class="line-report"><div class="report-heading">WEEKLY REPORTING || DATE➜ ${shortDateDisplay(group.startDate)} to ${shortDateDisplay(group.endDate)}</div>━━━━━━━━━━━━━━━━━━
+Friend Request➜ ${group.totals.friendRequest}
+Accept➜ ${group.totals.accept}
+Message➜ ${group.totals.message}
+Reply➜ ${group.totals.reply}
+Chatting➜ ${group.totals.chatting}
+Discuss Work (K.K)➜ ${group.totals.discussWork}
+Mobile Number➜ ${group.totals.mobileNumber}
+Invitation➜ ${group.totals.invitation}
+Confirm➜ ${group.totals.confirm}
+Stp➜ ${group.totals.stp}
+Follow Up➜ ${group.totals.followUp}
+Enrollment (D.D)➜ ${group.totals.dd}
+${buildEnrollmentLines(group.enrollments)}</div>
+
+          <button class="btn share-btn" data-share-index="${index}">Share</button>
+        </div>
+      `).join("");
+
+      attachActionButtons();
+    }
+
+    function renderMonthly(filterDate = ""){
+      const monthlyGroups = buildMonthlyGroups(allReports, filterDate);
+
+      if(monthlyGroups.length === 0){
+        dashboardContent.innerHTML = `<div class="list-card empty">No report</div>`;
+        renderedShareItems = [];
+        return;
+      }
+
+      renderedShareItems = monthlyGroups.map(group => ({ type: "monthly", data: group }));
+
+      dashboardContent.innerHTML = monthlyGroups.map((group, index) => `
+        <div class="list-card">
+          <div class="line-report"><div class="report-heading">MONTHLY REPORTING || DATE➜ ${shortDateDisplay(group.startDate)} to ${shortDateDisplay(group.endDate)}</div>━━━━━━━━━━━━━━━━━━
+Friend Request➜ ${group.totals.friendRequest}
+Accept➜ ${group.totals.accept}
+Message➜ ${group.totals.message}
+Reply➜ ${group.totals.reply}
+Chatting➜ ${group.totals.chatting}
+Discuss Work (K.K)➜ ${group.totals.discussWork}
+Mobile Number➜ ${group.totals.mobileNumber}
+Invitation➜ ${group.totals.invitation}
+Confirm➜ ${group.totals.confirm}
+Stp➜ ${group.totals.stp}
+Follow Up➜ ${group.totals.followUp}
+Enrollment (D.D)➜ ${group.totals.dd}
+${buildEnrollmentLines(group.enrollments)}</div>
+
+          <button class="btn share-btn" data-share-index="${index}">Share</button>
+        </div>
+      `).join("");
+
+      attachActionButtons();
+    }
+
+    function renderTotal(){
+      if(allReports.length === 0){
+        dashboardContent.innerHTML = `<div class="list-card empty">No report</div>`;
+        renderedShareItems = [];
+        return;
+      }
+
+      const total = sumReports(allReports);
+      const enrollments = collectEnrollments(allReports);
+      const firstDate = allReports.reduce((min, item) => !min || item.date < min ? item.date : min, "");
+      const lastDate = allReports.reduce((max, item) => !max || item.date > max ? item.date : max, "");
+
+      const totalData = {
+        startDate: firstDate,
+        endDate: lastDate,
+        time: "-",
+        totals: total,
+        enrollments
+      };
+
+      renderedShareItems = [{ type: "total", data: totalData }];
+
+      dashboardContent.innerHTML = `
+        <div class="list-card">
+          <div class="line-report"><div class="report-heading">TOTAL REPORTING || DATE➜ ${shortDateDisplay(firstDate)} to ${shortDateDisplay(lastDate)}</div>━━━━━━━━━━━━━━━━━━
+Friend Request➜ ${total.friendRequest}
+Accept➜ ${total.accept}
+Message➜ ${total.message}
+Reply➜ ${total.reply}
+Chatting➜ ${total.chatting}
+Discuss Work (K.K)➜ ${total.discussWork}
+Mobile Number➜ ${total.mobileNumber}
+Invitation➜ ${total.invitation}
+Confirm➜ ${total.confirm}
+Stp➜ ${total.stp}
+Follow Up➜ ${total.followUp}
+Enrollment (D.D)➜ ${total.dd}
+${buildEnrollmentLines(enrollments)}</div>
+
+          <button class="btn share-btn" data-share-index="0">Share</button>
+        </div>
+      `;
+
+      attachActionButtons();
+    }
+
+    function buildEnrollmentLines(enrollments = []){
+      const valid = (enrollments || []).filter(item => item && (item.name || item.amount));
+      if(valid.length === 0) return "";
+      return `━━━━━━━━━━━━━━━━━━
+${valid.map(item => `Name➜ ${item.name || "-"}
+Amount➜ ${item.amount || 0}`).join("\n")}`;
+    }
+
+    function collectEnrollments(items = []){
+      return items.flatMap(item => Array.isArray(item.enrollments) ? item.enrollments : [])
+        .filter(item => item && (item.name || item.amount));
+    }
+
+    function attachActionButtons(){
+      document.querySelectorAll("[data-share-index]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const index = Number(btn.dataset.shareIndex);
+          const item = renderedShareItems[index];
+          if(item){
+            shareReport(item.type, item.data);
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-edit-id]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const reportId = btn.dataset.editId;
+          localStorage.setItem("editReportId", reportId);
+          navigateSmooth(`report.html?edit=1&reportId=${encodeURIComponent(reportId)}`);
+        });
+      });
+
+      document.querySelectorAll("[data-delete-id]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const reportId = btn.dataset.deleteId;
+          openPopup("Delete Report", "Do you want to delete this report?", {
+            showCancel: true,
+            okText: "Yes",
+            cancelText: "No",
+            isDanger: true,
+            onOk: async () => {
+              try{
+                await deleteDoc(doc(db, "reports", reportId));
+                allReports = allReports.filter(item => item.id !== reportId);
+                renderDashboard(currentFilterDate);
+                openPopup("Deleted", "Report deleted successfully");
+              }catch(error){
+                openPopup("Error", "Delete failed", { isDanger: true });
+              }
+            }
+          });
+        });
+      });
+    }
+
+    function shareReport(type, data){
+      let text = "";
+
+      if(type === "daily"){
+        text = `TODAY'S REPORTING..... ━━━━━━━━━━━━━━━━━━
+Date➜ ${shortDateDisplay(data.date)}
+Time➜ ${getItemTime(data)}
+Friend Request➜ ${data.friendRequest || 0}
+Accept➜ ${data.accept || 0}
+Message➜ ${data.message || 0}
+Reply➜ ${data.reply || 0}
+Chatting➜ ${data.chatting || 0}
+Discuss Work (K.K)➜ ${data.discussWork || 0}
+Mobile Number➜ ${data.mobileNumber || 0}
+Invitation➜ ${data.invitation || 0}
+Confirm➜ ${data.confirm || 0}
+Stp➜ ${data.stp || 0}
+Follow Up➜ ${data.followUp || 0}
+Enrollment (D.D)➜ ${data.dd || 0}`;
+      }
+
+      if(type === "weekly"){
+        text = `WEEKLY REPORTING..... ━━━━━━━━━━━━━━━━━━
+Date➜ ${shortDateDisplay(data.startDate)} to ${shortDateDisplay(data.endDate)}
+Friend Request➜ ${data.totals.friendRequest}
+Accept➜ ${data.totals.accept}
+Message➜ ${data.totals.message}
+Reply➜ ${data.totals.reply}
+Chatting➜ ${data.totals.chatting}
+Discuss Work (K.K)➜ ${data.totals.discussWork}
+Mobile Number➜ ${data.totals.mobileNumber}
+Invitation➜ ${data.totals.invitation}
+Confirm➜ ${data.totals.confirm}
+Stp➜ ${data.totals.stp}
+Follow Up➜ ${data.totals.followUp}
+Enrollment (D.D)➜ ${data.totals.dd}`;
+      }
+
+      if(type === "monthly"){
+        text = `MONTHLY REPORTING..... ━━━━━━━━━━━━━━━━━━
+Date➜ ${shortDateDisplay(data.startDate)} to ${shortDateDisplay(data.endDate)}
+Friend Request➜ ${data.totals.friendRequest}
+Accept➜ ${data.totals.accept}
+Message➜ ${data.totals.message}
+Reply➜ ${data.totals.reply}
+Chatting➜ ${data.totals.chatting}
+Discuss Work (K.K)➜ ${data.totals.discussWork}
+Mobile Number➜ ${data.totals.mobileNumber}
+Invitation➜ ${data.totals.invitation}
+Confirm➜ ${data.totals.confirm}
+Stp➜ ${data.totals.stp}
+Follow Up➜ ${data.totals.followUp}
+Enrollment (D.D)➜ ${data.totals.dd}`;
+      }
+
+      if(type === "total"){
+        text = `TOTAL REPORTING..... ━━━━━━━━━━━━━━━━━━
+Date➜ ${shortDateDisplay(data.startDate)} to ${shortDateDisplay(data.endDate)}
+Friend Request➜ ${data.totals.friendRequest}
+Accept➜ ${data.totals.accept}
+Message➜ ${data.totals.message}
+Reply➜ ${data.totals.reply}
+Chatting➜ ${data.totals.chatting}
+Discuss Work (K.K)➜ ${data.totals.discussWork}
+Mobile Number➜ ${data.totals.mobileNumber}
+Invitation➜ ${data.totals.invitation}
+Confirm➜ ${data.totals.confirm}
+Stp➜ ${data.totals.stp}
+Follow Up➜ ${data.totals.followUp}
+Enrollment (D.D)➜ ${data.totals.dd}`;
+      }
+
+      window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+    }
+
+    function sumReports(arr){
+      return arr.reduce((acc, item) => {
+        acc.friendRequest += Number(item.friendRequest || 0);
+        acc.accept += Number(item.accept || 0);
+        acc.message += Number(item.message || 0);
+        acc.reply += Number(item.reply || 0);
+        acc.chatting += Number(item.chatting || 0);
+        acc.discussWork += Number(item.discussWork || 0);
+        acc.mobileNumber += Number(item.mobileNumber || 0);
+        acc.invitation += Number(item.invitation || 0);
+        acc.confirm += Number(item.confirm || 0);
+        acc.stp += Number(item.stp || 0);
+        acc.followUp += Number(item.followUp || 0);
+        acc.dd += Number(item.dd || 0);
+        return acc;
+      }, emptyTotals());
+    }
+
+    function emptyTotals(){
+      return {
+        friendRequest:0,
+        accept:0,
+        message:0,
+        reply:0,
+        chatting:0,
+        discussWork:0,
+        mobileNumber:0,
+        invitation:0,
+        confirm:0,
+        stp:0,
+        followUp:0,
+        dd:0
+      };
+    }
+
+    function buildWeeklyGroups(reports, filterDate = ""){
+      const grouped = {};
+      const today = new Date();
+      const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+      reports.forEach(item => {
+        const d = new Date(item.date);
+        if(isNaN(d)) return;
+
+        const start = getWeekStart(d);
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+
+        if(end > todayOnly) return;
+
+        const endIso = toIso(end);
+        if(filterDate && endIso !== filterDate) return;
+
+        const key = `${toIso(start)}__${endIso}`;
+
+        if(!grouped[key]){
+          grouped[key] = {
+            startDate: toIso(start),
+            endDate: endIso,
+            totals: emptyTotals(),
+            enrollments: [],
+            dates: []
+          };
+        }
+
+        grouped[key].dates.push(item.date);
+        mergeTotals(grouped[key].totals, item);
+
+        if(Array.isArray(item.enrollments)){
+          grouped[key].enrollments.push(...item.enrollments.filter(x => x && (x.name || x.amount)));
+        }
+      });
+
+      return Object.entries(grouped)
+        .sort((a,b) => b[0].localeCompare(a[0]))
+        .map(([_, value]) => value);
+    }
+
+    function buildMonthlyGroups(reports, filterDate = ""){
+      const grouped = {};
+      const today = new Date();
+      const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+      reports.forEach(item => {
+        const d = new Date(item.date);
+        if(isNaN(d)) return;
+
+        const y = d.getFullYear();
+        const m = d.getMonth();
+        const monthStart = new Date(y, m, 1);
+        const monthEnd = new Date(y, m + 1, 0);
+        const monthEndIso = toIso(monthEnd);
+
+        if(monthEnd > todayOnly) return;
+        if(filterDate && monthEndIso !== filterDate) return;
+
+        const key = `${y}-${String(m + 1).padStart(2,"0")}`;
+
+        if(!grouped[key]){
+          grouped[key] = {
+            startDate: toIso(monthStart),
+            endDate: monthEndIso,
+            totals: emptyTotals(),
+            enrollments: [],
+            dates: []
+          };
+        }
+
+        grouped[key].dates.push(item.date);
+        mergeTotals(grouped[key].totals, item);
+
+        if(Array.isArray(item.enrollments)){
+          grouped[key].enrollments.push(...item.enrollments.filter(x => x && (x.name || x.amount)));
+        }
+      });
+
+      return Object.entries(grouped)
+        .sort((a,b) => b[0].localeCompare(a[0]))
+        .map(([_, value]) => value);
+    }
+
+    function mergeTotals(totals, item){
+      totals.friendRequest += Number(item.friendRequest || 0);
+      totals.accept += Number(item.accept || 0);
+      totals.message += Number(item.message || 0);
+      totals.reply += Number(item.reply || 0);
+      totals.chatting += Number(item.chatting || 0);
+      totals.discussWork += Number(item.discussWork || 0);
+      totals.mobileNumber += Number(item.mobileNumber || 0);
+      totals.invitation += Number(item.invitation || 0);
+      totals.confirm += Number(item.confirm || 0);
+      totals.stp += Number(item.stp || 0);
+      totals.followUp += Number(item.followUp || 0);
+      totals.dd += Number(item.dd || 0);
+    }
+
+    function getWeekStart(date){
+      const d = new Date(date);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(d.getFullYear(), d.getMonth(), diff);
+    }
+
+    function toIso(date){
+      return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0")
+      ].join("-");
+    }
+
+    function shortDateDisplay(value){
+      if(!value) return "-";
+      const d = new Date(value);
+      if(isNaN(d)) return value;
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yy = String(d.getFullYear()).slice(-2);
+      return `${dd}/${mm}/${yy}`;
+    }
+
+    function formatTimeDisplay(time24){
+      if(!time24) return "";
+      const [hh, mm] = time24.split(":");
+      let hours = Number(hh);
+      const minutes = mm || "00";
+      const ampm = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      return `${hours}:${minutes} ${ampm}`;
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if(!user){
+        location.replace("index.html");
+        return;
+      }
+      await loadReports();
+      renderDashboard();
+    });
+  </script>
+</body>
+</html>
