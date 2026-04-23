@@ -115,7 +115,7 @@
     }
 
     #dashboardScreen{
-      padding-top:168px;
+      padding-top:138px;
     }
 
     .header-bar{
@@ -155,7 +155,7 @@
       min-width:0;
       width:100%;
       text-align:center;
-      font-size:16px;
+      font-size:25px;
       font-weight:900;
       margin:0;
       letter-spacing:.8px;
@@ -262,6 +262,19 @@
       text-overflow:ellipsis;
     }
 
+    .report-mode-badge{
+      display:inline-block;
+      margin-bottom:10px;
+      padding:6px 12px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.4px;
+      color:#172100;
+      background:linear-gradient(135deg,var(--green1),var(--green2));
+      box-shadow:0 10px 18px rgba(125,255,178,0.22), inset 0 1px 0 rgba(255,255,255,0.55);
+    }
+
     .empty{
       text-align:center;
       color:var(--muted);
@@ -297,6 +310,42 @@
     .filter-popup > *{
       position:relative;
       z-index:1;
+    }
+
+    .sub-filter-wrap{
+      margin-top:10px;
+    }
+
+    .sub-filter-toggle{
+      display:flex;
+      gap:10px;
+      margin-top:8px;
+    }
+
+    .sub-filter-btn{
+      flex:1;
+      border:none;
+      border-radius:16px;
+      padding:11px 12px;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+      color:var(--primary);
+      background:linear-gradient(180deg, #ffffff 0%, #f3f0ff 100%);
+      border:1px solid #e8e3ff;
+      box-shadow:0 10px 20px rgba(17,24,39,0.05), inset 0 1px 0 rgba(255,255,255,0.9);
+      transition:transform .18s ease, box-shadow .18s ease;
+    }
+
+    .sub-filter-btn:active{
+      transform:scale(.98);
+    }
+
+    .sub-filter-btn.active{
+      color:#172100;
+      background:linear-gradient(135deg,var(--green1),var(--green2));
+      border-color:transparent;
+      box-shadow:0 14px 28px rgba(125,255,178,0.26), inset 0 1px 0 rgba(255,255,255,0.55);
     }
 
     label{
@@ -358,19 +407,19 @@
       box-shadow:0 10px 20px rgba(17,24,39,0.05), inset 0 1px 0 rgba(255,255,255,0.9);
     }
 
-.share-btn{
-  margin-top:14px;
-  color:#ffffff;
-  background:linear-gradient(135deg,#00c853,#00e676);
-  box-shadow:0 14px 28px rgba(0,200,83,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
-  border:none;
-  border-radius:20px;
-  font-weight:900;
-}
+    .share-btn{
+      margin-top:14px;
+      color:#ffffff;
+      background:linear-gradient(135deg,#00c853,#00e676);
+      box-shadow:0 14px 28px rgba(0,200,83,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+      border:none;
+      border-radius:20px;
+      font-weight:900;
+    }
 
-.share-btn:active{
-  transform:scale(.96);
-}
+    .share-btn:active{
+      transform:scale(.96);
+    }
 
     .small-actions{
       display:grid;
@@ -485,6 +534,66 @@
       flex:1;
     }
 
+    .loading-wrap{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:12px;
+      min-height:220px;
+      width:100%;
+      background:linear-gradient(180deg, #faf9ff 0%, #f2efff 100%);
+      border:1px solid var(--card-border);
+      border-radius:30px;
+      box-shadow:var(--card-shadow);
+      position:relative;
+      overflow:hidden;
+      margin-bottom:16px;
+      text-align:center;
+    }
+
+    .loading-wrap::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 14% 10%, rgba(255,255,255,0.95), transparent 20%),
+        linear-gradient(180deg, rgba(255,255,255,0.55), transparent 28%);
+      pointer-events:none;
+    }
+
+    .loading-wrap > *{
+      position:relative;
+      z-index:1;
+    }
+
+    .loading-text{
+      font-size:16px;
+      font-weight:900;
+      color:var(--text);
+    }
+
+    .loading-dots{
+      display:inline-flex;
+      gap:6px;
+    }
+
+    .loading-dots span{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--primary);
+      animation:blink 1s infinite ease-in-out;
+    }
+
+    .loading-dots span:nth-child(2){animation-delay:.15s}
+    .loading-dots span:nth-child(3){animation-delay:.30s}
+
+    @keyframes blink{
+      0%,80%,100%{opacity:.25; transform:translateY(0)}
+      40%{opacity:1; transform:translateY(-4px)}
+    }
+
     @keyframes cardEnter{
       from{opacity:0; transform:translateY(10px)}
       to{opacity:1; transform:translateY(0)}
@@ -545,6 +654,14 @@
           <option value="monthly">Monthly</option>
         </select>
 
+        <div id="dailyModeFilterWrap" class="sub-filter-wrap hidden">
+          <label>Daily Mode</label>
+          <div class="sub-filter-toggle">
+            <button class="sub-filter-btn active" id="dailyListFilterBtn" type="button">LIST</button>
+            <button class="sub-filter-btn active" id="dailyFbigFilterBtn" type="button">FACEBOOK/INSTAGRAM</button>
+          </div>
+        </div>
+
         <button class="btn btn-primary" id="applyFilterBtn">Search</button>
         <button class="btn btn-secondary" id="resetFilterBtn">Reset</button>
       </div>
@@ -592,6 +709,10 @@
     const filterDate = document.getElementById("filterDate");
     const filterType = document.getElementById("filterType");
 
+    const dailyModeFilterWrap = document.getElementById("dailyModeFilterWrap");
+    const dailyListFilterBtn = document.getElementById("dailyListFilterBtn");
+    const dailyFbigFilterBtn = document.getElementById("dailyFbigFilterBtn");
+
     const popup = document.getElementById("popup");
     const popupTitle = document.getElementById("popupTitle");
     const popupText = document.getElementById("popupText");
@@ -606,6 +727,10 @@
     let popupOkAction = null;
     let popupCancelAction = null;
     let handlingPopState = false;
+    let isLoadingReports = false;
+
+    let dailyShowList = true;
+    let dailyShowFbig = true;
 
     history.replaceState({ page: "dashboard" }, "");
 
@@ -668,6 +793,7 @@
 
     function openFilterPopup(){
       filterPopup.classList.remove("hidden");
+      updateDailyModeFilterVisibility();
       history.pushState({ page: "filter" }, "");
     }
 
@@ -706,6 +832,31 @@
       }
     });
 
+    function updateDailyModeFilterButtons(){
+      dailyListFilterBtn.classList.toggle("active", dailyShowList);
+      dailyFbigFilterBtn.classList.toggle("active", dailyShowFbig);
+    }
+
+    function updateDailyModeFilterVisibility(){
+      const selectedType = filterType.value || currentTab;
+      const shouldShow = selectedType === "daily";
+      dailyModeFilterWrap.classList.toggle("hidden", !shouldShow);
+    }
+
+    filterType.addEventListener("change", () => {
+      updateDailyModeFilterVisibility();
+    });
+
+    dailyListFilterBtn.addEventListener("click", () => {
+      dailyShowList = !dailyShowList;
+      updateDailyModeFilterButtons();
+    });
+
+    dailyFbigFilterBtn.addEventListener("click", () => {
+      dailyShowFbig = !dailyShowFbig;
+      updateDailyModeFilterButtons();
+    });
+
     applyFilterBtn.addEventListener("click", () => {
       currentFilterDate = filterDate.value || "";
       if(filterType.value){
@@ -721,6 +872,10 @@
       filterDate.value = "";
       filterType.value = "";
       currentTab = "daily";
+      dailyShowList = true;
+      dailyShowFbig = true;
+      updateDailyModeFilterButtons();
+      updateDailyModeFilterVisibility();
       setActiveTab();
       renderDashboard("");
       closeFilterPopup(true);
@@ -752,11 +907,42 @@
       tabButtons.forEach(btn => {
         btn.classList.toggle("active", btn.dataset.tab === currentTab);
       });
+      updateDailyModeFilterVisibility();
+    }
+
+    function showLoadingState(){
+      dashboardContent.innerHTML = `
+        <div class="loading-wrap">
+          <div class="loading-text">Loading reports</div>
+          <div class="loading-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      `;
+    }
+
+    function isListStyle(data){
+      const total =
+        Number(data.friendRequest || 0) +
+        Number(data.accept || 0) +
+        Number(data.message || 0) +
+        Number(data.reply || 0) +
+        Number(data.chatting || 0) +
+        Number(data.discussWork || 0);
+
+      return total === 0;
+    }
+
+    function getReportModeLabel(data){
+      return isListStyle(data) ? "LIST" : "FACEBOOK/INSTAGRAM";
     }
 
     async function loadReports(){
       const user = auth.currentUser;
       if(!user) return;
+
+      isLoadingReports = true;
+      showLoadingState();
 
       const q = query(collection(db, "reports"), where("userId", "==", user.uid));
       const snap = await getDocs(q);
@@ -771,9 +957,16 @@
         const bd = b.date || "";
         return bd.localeCompare(ad);
       });
+
+      isLoadingReports = false;
     }
 
     function renderDashboard(filterDate = ""){
+      if(isLoadingReports){
+        showLoadingState();
+        return;
+      }
+
       if(currentTab === "daily"){
         renderDaily(filterDate);
       }else if(currentTab === "weekly"){
@@ -800,6 +993,13 @@
         list = list.filter(item => item.date === filterDate);
       }
 
+      list = list.filter(item => {
+        const listStyle = isListStyle(item);
+        if(listStyle && dailyShowList) return true;
+        if(!listStyle && dailyShowFbig) return true;
+        return false;
+      });
+
       if(list.length === 0){
         dashboardContent.innerHTML = `<div class="list-card empty">No report</div>`;
         renderedShareItems = [];
@@ -808,11 +1008,20 @@
 
       renderedShareItems = list.map(item => ({ type: "daily", data: item }));
 
-      dashboardContent.innerHTML = list.map((item, index) => `
-        <div class="list-card">
-          <div class="line-report"><div class="report-heading daily-heading">DAILY REPORTING || DATE➜ ${shortDateDisplay(item.date)}</div>━━━━━━━━━━━━━━━━━━
+      dashboardContent.innerHTML = list.map((item, index) => {
+        const listStyle = isListStyle(item);
+
+        return `
+          <div class="list-card">
+            <div class="report-mode-badge">${getReportModeLabel(item)}</div>
+            <div class="line-report"><div class="report-heading daily-heading">DAILY REPORTING || DATE➜ ${shortDateDisplay(item.date)}</div>━━━━━━━━━━━━━━━━━━
 Time➜ ${getItemTime(item)}
-Friend Request➜ ${item.friendRequest || 0}
+${listStyle ? `Mobile Number➜ ${item.mobileNumber || 0}
+Invitation➜ ${item.invitation || 0}
+Confirm➜ ${item.confirm || 0}
+Stp➜ ${item.stp || 0}
+Follow Up➜ ${item.followUp || 0}
+Enrollment (D.D)➜ ${item.dd || 0}` : `Friend Request➜ ${item.friendRequest || 0}
 Accept➜ ${item.accept || 0}
 Message➜ ${item.message || 0}
 Reply➜ ${item.reply || 0}
@@ -823,17 +1032,18 @@ Invitation➜ ${item.invitation || 0}
 Confirm➜ ${item.confirm || 0}
 Stp➜ ${item.stp || 0}
 Follow Up➜ ${item.followUp || 0}
-Enrollment (D.D)➜ ${item.dd || 0}
+Enrollment (D.D)➜ ${item.dd || 0}`}
 ${buildEnrollmentLines(item.enrollments)}</div>
 
-          <button class="btn share-btn" data-share-index="${index}">Share</button>
+            <button class="btn share-btn" data-share-index="${index}">Share</button>
 
-          <div class="small-actions">
-            <button class="btn small-btn btn-edit" data-edit-id="${item.id}">Edit</button>
-            <button class="btn small-btn btn-delete" data-delete-id="${item.id}">Delete</button>
+            <div class="small-actions">
+              <button class="btn small-btn btn-edit" data-edit-id="${item.id}">Edit</button>
+              <button class="btn small-btn btn-delete" data-delete-id="${item.id}">Delete</button>
+            </div>
           </div>
-        </div>
-      `).join("");
+        `;
+      }).join("");
 
       attachActionButtons();
     }
@@ -849,10 +1059,19 @@ ${buildEnrollmentLines(item.enrollments)}</div>
 
       renderedShareItems = weeklyGroups.map(group => ({ type: "weekly", data: group }));
 
-      dashboardContent.innerHTML = weeklyGroups.map((group, index) => `
-        <div class="list-card">
-          <div class="line-report"><div class="report-heading">WEEKLY REPORTING || DATE➜ ${shortDateDisplay(group.startDate)} to ${shortDateDisplay(group.endDate)}</div>━━━━━━━━━━━━━━━━━━
-Friend Request➜ ${group.totals.friendRequest}
+      dashboardContent.innerHTML = weeklyGroups.map((group, index) => {
+        const listStyle = isListStyle(group.totals);
+
+        return `
+          <div class="list-card">
+            <div class="report-mode-badge">${getReportModeLabel(group.totals)}</div>
+            <div class="line-report"><div class="report-heading">WEEKLY REPORTING || DATE➜ ${shortDateDisplay(group.startDate)} to ${shortDateDisplay(group.endDate)}</div>━━━━━━━━━━━━━━━━━━
+${listStyle ? `Mobile Number➜ ${group.totals.mobileNumber}
+Invitation➜ ${group.totals.invitation}
+Confirm➜ ${group.totals.confirm}
+Stp➜ ${group.totals.stp}
+Follow Up➜ ${group.totals.followUp}
+Enrollment (D.D)➜ ${group.totals.dd}` : `Friend Request➜ ${group.totals.friendRequest}
 Accept➜ ${group.totals.accept}
 Message➜ ${group.totals.message}
 Reply➜ ${group.totals.reply}
@@ -863,12 +1082,13 @@ Invitation➜ ${group.totals.invitation}
 Confirm➜ ${group.totals.confirm}
 Stp➜ ${group.totals.stp}
 Follow Up➜ ${group.totals.followUp}
-Enrollment (D.D)➜ ${group.totals.dd}
+Enrollment (D.D)➜ ${group.totals.dd}`}
 ${buildEnrollmentLines(group.enrollments)}</div>
 
-          <button class="btn share-btn" data-share-index="${index}">Share</button>
-        </div>
-      `).join("");
+            <button class="btn share-btn" data-share-index="${index}">Share</button>
+          </div>
+        `;
+      }).join("");
 
       attachActionButtons();
     }
@@ -884,10 +1104,19 @@ ${buildEnrollmentLines(group.enrollments)}</div>
 
       renderedShareItems = monthlyGroups.map(group => ({ type: "monthly", data: group }));
 
-      dashboardContent.innerHTML = monthlyGroups.map((group, index) => `
-        <div class="list-card">
-          <div class="line-report"><div class="report-heading">MONTHLY REPORTING || DATE➜ ${shortDateDisplay(group.startDate)} to ${shortDateDisplay(group.endDate)}</div>━━━━━━━━━━━━━━━━━━
-Friend Request➜ ${group.totals.friendRequest}
+      dashboardContent.innerHTML = monthlyGroups.map((group, index) => {
+        const listStyle = isListStyle(group.totals);
+
+        return `
+          <div class="list-card">
+            <div class="report-mode-badge">${getReportModeLabel(group.totals)}</div>
+            <div class="line-report"><div class="report-heading">MONTHLY REPORTING || DATE➜ ${shortDateDisplay(group.startDate)} to ${shortDateDisplay(group.endDate)}</div>━━━━━━━━━━━━━━━━━━
+${listStyle ? `Mobile Number➜ ${group.totals.mobileNumber}
+Invitation➜ ${group.totals.invitation}
+Confirm➜ ${group.totals.confirm}
+Stp➜ ${group.totals.stp}
+Follow Up➜ ${group.totals.followUp}
+Enrollment (D.D)➜ ${group.totals.dd}` : `Friend Request➜ ${group.totals.friendRequest}
 Accept➜ ${group.totals.accept}
 Message➜ ${group.totals.message}
 Reply➜ ${group.totals.reply}
@@ -898,12 +1127,13 @@ Invitation➜ ${group.totals.invitation}
 Confirm➜ ${group.totals.confirm}
 Stp➜ ${group.totals.stp}
 Follow Up➜ ${group.totals.followUp}
-Enrollment (D.D)➜ ${group.totals.dd}
+Enrollment (D.D)➜ ${group.totals.dd}`}
 ${buildEnrollmentLines(group.enrollments)}</div>
 
-          <button class="btn share-btn" data-share-index="${index}">Share</button>
-        </div>
-      `).join("");
+            <button class="btn share-btn" data-share-index="${index}">Share</button>
+          </div>
+        `;
+      }).join("");
 
       attachActionButtons();
     }
@@ -919,6 +1149,7 @@ ${buildEnrollmentLines(group.enrollments)}</div>
       const enrollments = collectEnrollments(allReports);
       const firstDate = allReports.reduce((min, item) => !min || item.date < min ? item.date : min, "");
       const lastDate = allReports.reduce((max, item) => !max || item.date > max ? item.date : max, "");
+      const listStyle = isListStyle(total);
 
       const totalData = {
         startDate: firstDate,
@@ -932,8 +1163,14 @@ ${buildEnrollmentLines(group.enrollments)}</div>
 
       dashboardContent.innerHTML = `
         <div class="list-card">
+          <div class="report-mode-badge">${getReportModeLabel(total)}</div>
           <div class="line-report"><div class="report-heading">TOTAL REPORTING || DATE➜ ${shortDateDisplay(firstDate)} to ${shortDateDisplay(lastDate)}</div>━━━━━━━━━━━━━━━━━━
-Friend Request➜ ${total.friendRequest}
+${listStyle ? `Mobile Number➜ ${total.mobileNumber}
+Invitation➜ ${total.invitation}
+Confirm➜ ${total.confirm}
+Stp➜ ${total.stp}
+Follow Up➜ ${total.followUp}
+Enrollment (D.D)➜ ${total.dd}` : `Friend Request➜ ${total.friendRequest}
 Accept➜ ${total.accept}
 Message➜ ${total.message}
 Reply➜ ${total.reply}
@@ -944,7 +1181,7 @@ Invitation➜ ${total.invitation}
 Confirm➜ ${total.confirm}
 Stp➜ ${total.stp}
 Follow Up➜ ${total.followUp}
-Enrollment (D.D)➜ ${total.dd}
+Enrollment (D.D)➜ ${total.dd}`}
 ${buildEnrollmentLines(enrollments)}</div>
 
           <button class="btn share-btn" data-share-index="0">Share</button>
@@ -1013,10 +1250,16 @@ Amount➜ ${item.amount || 0}`).join("\n")}`;
       let text = "";
 
       if(type === "daily"){
+        const listStyle = isListStyle(data);
         text = `TODAY'S REPORTING..... ━━━━━━━━━━━━━━━━━━
 Date➜ ${shortDateDisplay(data.date)}
 Time➜ ${getItemTime(data)}
-Friend Request➜ ${data.friendRequest || 0}
+${listStyle ? `Mobile Number➜ ${data.mobileNumber || 0}
+Invitation➜ ${data.invitation || 0}
+Confirm➜ ${data.confirm || 0}
+Stp➜ ${data.stp || 0}
+Follow Up➜ ${data.followUp || 0}
+Enrollment (D.D)➜ ${data.dd || 0}` : `Friend Request➜ ${data.friendRequest || 0}
 Accept➜ ${data.accept || 0}
 Message➜ ${data.message || 0}
 Reply➜ ${data.reply || 0}
@@ -1027,13 +1270,19 @@ Invitation➜ ${data.invitation || 0}
 Confirm➜ ${data.confirm || 0}
 Stp➜ ${data.stp || 0}
 Follow Up➜ ${data.followUp || 0}
-Enrollment (D.D)➜ ${data.dd || 0}`;
+Enrollment (D.D)➜ ${data.dd || 0}`}`;
       }
 
       if(type === "weekly"){
+        const listStyle = isListStyle(data.totals);
         text = `WEEKLY REPORTING..... ━━━━━━━━━━━━━━━━━━
 Date➜ ${shortDateDisplay(data.startDate)} to ${shortDateDisplay(data.endDate)}
-Friend Request➜ ${data.totals.friendRequest}
+${listStyle ? `Mobile Number➜ ${data.totals.mobileNumber}
+Invitation➜ ${data.totals.invitation}
+Confirm➜ ${data.totals.confirm}
+Stp➜ ${data.totals.stp}
+Follow Up➜ ${data.totals.followUp}
+Enrollment (D.D)➜ ${data.totals.dd}` : `Friend Request➜ ${data.totals.friendRequest}
 Accept➜ ${data.totals.accept}
 Message➜ ${data.totals.message}
 Reply➜ ${data.totals.reply}
@@ -1044,13 +1293,19 @@ Invitation➜ ${data.totals.invitation}
 Confirm➜ ${data.totals.confirm}
 Stp➜ ${data.totals.stp}
 Follow Up➜ ${data.totals.followUp}
-Enrollment (D.D)➜ ${data.totals.dd}`;
+Enrollment (D.D)➜ ${data.totals.dd}`}`;
       }
 
       if(type === "monthly"){
+        const listStyle = isListStyle(data.totals);
         text = `MONTHLY REPORTING..... ━━━━━━━━━━━━━━━━━━
 Date➜ ${shortDateDisplay(data.startDate)} to ${shortDateDisplay(data.endDate)}
-Friend Request➜ ${data.totals.friendRequest}
+${listStyle ? `Mobile Number➜ ${data.totals.mobileNumber}
+Invitation➜ ${data.totals.invitation}
+Confirm➜ ${data.totals.confirm}
+Stp➜ ${data.totals.stp}
+Follow Up➜ ${data.totals.followUp}
+Enrollment (D.D)➜ ${data.totals.dd}` : `Friend Request➜ ${data.totals.friendRequest}
 Accept➜ ${data.totals.accept}
 Message➜ ${data.totals.message}
 Reply➜ ${data.totals.reply}
@@ -1061,13 +1316,19 @@ Invitation➜ ${data.totals.invitation}
 Confirm➜ ${data.totals.confirm}
 Stp➜ ${data.totals.stp}
 Follow Up➜ ${data.totals.followUp}
-Enrollment (D.D)➜ ${data.totals.dd}`;
+Enrollment (D.D)➜ ${data.totals.dd}`}`;
       }
 
       if(type === "total"){
+        const listStyle = isListStyle(data.totals);
         text = `TOTAL REPORTING..... ━━━━━━━━━━━━━━━━━━
 Date➜ ${shortDateDisplay(data.startDate)} to ${shortDateDisplay(data.endDate)}
-Friend Request➜ ${data.totals.friendRequest}
+${listStyle ? `Mobile Number➜ ${data.totals.mobileNumber}
+Invitation➜ ${data.totals.invitation}
+Confirm➜ ${data.totals.confirm}
+Stp➜ ${data.totals.stp}
+Follow Up➜ ${data.totals.followUp}
+Enrollment (D.D)➜ ${data.totals.dd}` : `Friend Request➜ ${data.totals.friendRequest}
 Accept➜ ${data.totals.accept}
 Message➜ ${data.totals.message}
 Reply➜ ${data.totals.reply}
@@ -1078,10 +1339,10 @@ Invitation➜ ${data.totals.invitation}
 Confirm➜ ${data.totals.confirm}
 Stp➜ ${data.totals.stp}
 Follow Up➜ ${data.totals.followUp}
-Enrollment (D.D)➜ ${data.totals.dd}`;
+Enrollment (D.D)➜ ${data.totals.dd}`}`;
       }
 
-window.location.href = "https://wa.me/?text=" + encodeURIComponent(text);
+      window.location.href = "https://wa.me/?text=" + encodeURIComponent(text);
     }
 
     function sumReports(arr){
@@ -1255,6 +1516,9 @@ window.location.href = "https://wa.me/?text=" + encodeURIComponent(text);
       hours = hours ? hours : 12;
       return `${hours}:${minutes} ${ampm}`;
     }
+
+    updateDailyModeFilterButtons();
+    updateDailyModeFilterVisibility();
 
     onAuthStateChanged(auth, async (user) => {
       if(!user){
