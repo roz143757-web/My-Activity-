@@ -73,7 +73,7 @@
       max-width:480px;
       margin:0 auto;
       z-index:999;
-      padding:10px 16px 14px;
+      padding:10px 16px 18px;
       background:linear-gradient(135deg, #8b7bff, #7b6cff);
       border-bottom:1px solid rgba(255,255,255,0.28);
       box-shadow:
@@ -92,7 +92,7 @@
     }
 
     #newReportScreen{
-      padding-top:92px;
+      padding-top:135px;
     }
 
     .header-bar{
@@ -132,7 +132,7 @@
       min-width:0;
       width:100%;
       text-align:center;
-      font-size:16px;
+      font-size:25px;
       font-weight:900;
       margin:0;
       letter-spacing:.8px;
@@ -141,6 +141,39 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+    }
+
+    .mode-switch{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      margin-bottom:4px;
+    }
+
+    .mode-btn{
+      flex:1;
+      border:none;
+      border-radius:16px;
+      padding:12px 14px;
+      font-size:14px;
+      font-weight:900;
+      cursor:pointer;
+      color:var(--primary);
+      background:linear-gradient(180deg, #ffffff 0%, #f3f0ff 100%);
+      border:1px solid #e8e3ff;
+      box-shadow:0 10px 20px rgba(17,24,39,0.05), inset 0 1px 0 rgba(255,255,255,0.9);
+      transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    }
+
+    .mode-btn:active{
+      transform:scale(.98);
+    }
+
+    .mode-btn.active{
+      color:#172100;
+      background:linear-gradient(135deg,var(--green1),var(--green2));
+      box-shadow:0 14px 28px rgba(125,255,178,0.26), inset 0 1px 0 rgba(255,255,255,0.55);
+      border-color:transparent;
     }
 
     .report-card{
@@ -546,6 +579,11 @@
           <h2 class="header-title" id="headerTitle">NEW REPORT</h2>
           <button class="icon-btn" id="goDashboardBtn">➡️</button>
         </div>
+
+        <div class="mode-switch">
+          <button class="mode-btn" id="listBtn" type="button">LIST</button>
+          <button class="mode-btn active" id="fbigBtn" type="button">FB/IG</button>
+        </div>
       </div>
 
       <div class="report-card">
@@ -569,32 +607,32 @@
             </div>
           </div>
 
-          <div>
+          <div id="groupFriendRequest">
             <label>Friend request</label>
             <input type="number" id="friendRequest" min="0" value="0" />
           </div>
 
-          <div>
+          <div id="groupAccept">
             <label>Accept</label>
             <input type="number" id="accept" min="0" value="0" />
           </div>
 
-          <div>
+          <div id="groupMessage">
             <label>Message</label>
             <input type="number" id="message" min="0" value="0" />
           </div>
 
-          <div>
+          <div id="groupReply">
             <label>Reply</label>
             <input type="number" id="reply" min="0" value="0" />
           </div>
 
-          <div>
+          <div id="groupChatting">
             <label>Chatting</label>
             <input type="number" id="chatting" min="0" value="0" />
           </div>
 
-          <div>
+          <div id="groupDiscussWork">
             <label>Discuss work (K.K)</label>
             <input type="number" id="discussWork" min="0" value="0" />
           </div>
@@ -703,6 +741,16 @@ DD➜1"></textarea>
     const goDashboardBtn = document.getElementById("goDashboardBtn");
     const headerTitle = document.getElementById("headerTitle");
 
+    const fbigBtn = document.getElementById("fbigBtn");
+    const listBtn = document.getElementById("listBtn");
+
+    const groupFriendRequest = document.getElementById("groupFriendRequest");
+    const groupAccept = document.getElementById("groupAccept");
+    const groupMessage = document.getElementById("groupMessage");
+    const groupReply = document.getElementById("groupReply");
+    const groupChatting = document.getElementById("groupChatting");
+    const groupDiscussWork = document.getElementById("groupDiscussWork");
+
     const saveReportBtn = document.getElementById("saveReportBtn");
     const saveMsg = document.getElementById("saveMsg");
     const parsePasteBtn = document.getElementById("parsePasteBtn");
@@ -731,6 +779,7 @@ DD➜1"></textarea>
     let isEditMode = false;
     let editingReportId = "";
     let initialEditLoaded = false;
+    let currentReportMode = "fbig";
 
     function showMsg(el, text, color = ""){
       el.textContent = text;
@@ -833,16 +882,53 @@ DD➜1"></textarea>
       }
     }
 
+    function setReportMode(mode){
+      currentReportMode = mode;
+
+      const isList = mode === "list";
+
+      fbigBtn.classList.toggle("active", !isList);
+      listBtn.classList.toggle("active", isList);
+
+      groupFriendRequest.classList.toggle("hidden", isList);
+      groupAccept.classList.toggle("hidden", isList);
+      groupMessage.classList.toggle("hidden", isList);
+      groupReply.classList.toggle("hidden", isList);
+      groupChatting.classList.toggle("hidden", isList);
+      groupDiscussWork.classList.toggle("hidden", isList);
+
+      if(isList){
+        document.getElementById("friendRequest").value = 0;
+        document.getElementById("accept").value = 0;
+        document.getElementById("message").value = 0;
+        document.getElementById("reply").value = 0;
+        document.getElementById("chatting").value = 0;
+        document.getElementById("discussWork").value = 0;
+      }
+    }
+
+    function detectReportModeFromData(data){
+      const topTotal =
+        Number(data.friendRequest || 0) +
+        Number(data.accept || 0) +
+        Number(data.message || 0) +
+        Number(data.reply || 0) +
+        Number(data.chatting || 0) +
+        Number(data.discussWork || 0);
+
+      return topTotal > 0 ? "fbig" : "list";
+    }
+
     menuBtn.addEventListener("click", openDrawer);
     drawerCloseBtn.addEventListener("click", () => closeDrawer());
     drawerOverlay.addEventListener("click", () => closeDrawer());
 
     drawerShareBtn.addEventListener("click", async () => {
-  closeDrawer();
-  setTimeout(() => {
-    window.location.href = "shareapp://open";
-  }, 180);
-});
+      closeDrawer();
+      setTimeout(() => {
+        window.location.href = "shareapp://open";
+      }, 180);
+    });
 
     drawerLogoutBtn.addEventListener("click", () => {
       closeDrawer();
@@ -865,22 +951,27 @@ DD➜1"></textarea>
       location.href = "dashboard.html";
     });
 
+    fbigBtn.addEventListener("click", () => {
+      setReportMode("fbig");
+    });
+
+    listBtn.addEventListener("click", () => {
+      setReportMode("list");
+    });
+
     function getEditReportIdFromSource(){
-      const params = new URLSearchParams(window.location.search);
-      const reportIdFromUrl = params.get("reportId");
-      const editFlag = params.get("edit");
-      const reportIdFromStorage = localStorage.getItem("editReportId") || "";
+  const params = new URLSearchParams(window.location.search);
+  const reportIdFromUrl = params.get("reportId");
+  const editFlag = params.get("edit");
 
-      if(editFlag === "1" && reportIdFromUrl){
-        return reportIdFromUrl;
-      }
+  if(editFlag === "1" && reportIdFromUrl){
+    localStorage.setItem("editReportId", reportIdFromUrl);
+    return reportIdFromUrl;
+  }
 
-      if(reportIdFromStorage){
-        return reportIdFromStorage;
-      }
-
-      return "";
-    }
+  localStorage.removeItem("editReportId");
+  return "";
+}
 
     function clearEditModeSource(){
       localStorage.removeItem("editReportId");
@@ -1063,26 +1154,27 @@ DD➜1"></textarea>
       renderEnrollmentFields(0);
       updateTimeBoxState();
       attachZeroClearInputs();
+      setReportMode("fbig");
     }
 
     function getMissingFields(data){
-      const missing = [];
+  const missing = [];
 
-      if(!data.date) missing.push("Date");
-      if(!data.timeFrom) missing.push("Time From");
-      if(!data.timeTo) missing.push("Time To");
-      if(!(data.friendRequest > 0)) missing.push("Friend request");
-      if(!(data.accept > 0)) missing.push("Accept");
-      if(!(data.message > 0)) missing.push("Message");
-      if(!(data.reply > 0)) missing.push("Reply");
-      if(!(data.chatting > 0)) missing.push("Chatting");
-      if(!(data.discussWork > 0)) missing.push("Discuss work (K.K)");
-      if(!(data.mobileNumber > 0)) missing.push("Mobile number");
-      if(!(data.invitation > 0)) missing.push("Invitation");
-      if(!(data.confirm > 0)) missing.push("Confirm");
+  if(!data.date) missing.push("Date");
+  if(!data.timeFrom) missing.push("Time From");
+  if(!data.timeTo) missing.push("Time To");
 
-      return missing;
-    }
+  if(currentReportMode !== "list"){
+    if(!(data.friendRequest > 0)) missing.push("Friend request");
+    if(!(data.accept > 0)) missing.push("Accept");
+    if(!(data.message > 0)) missing.push("Message");
+    if(!(data.reply > 0)) missing.push("Reply");
+    if(!(data.chatting > 0)) missing.push("Chatting");
+    if(!(data.discussWork > 0)) missing.push("Discuss work (K.K)");
+  }
+
+  return missing;
+}
 
     function fillFieldValue(id, value){
       const el = document.getElementById(id);
@@ -1110,6 +1202,7 @@ DD➜1"></textarea>
 
       fillEnrollmentData(data.enrollments || []);
       updateTimeBoxState();
+      setReportMode(detectReportModeFromData(data));
     }
 
     async function loadEditReportIfNeeded(user){
@@ -1125,6 +1218,7 @@ DD➜1"></textarea>
         renderEnrollmentFields(0);
         attachZeroClearInputs();
         updateTimeBoxState();
+        setReportMode("fbig");
         return;
       }
 
@@ -1141,6 +1235,7 @@ DD➜1"></textarea>
           renderEnrollmentFields(0);
           attachZeroClearInputs();
           updateTimeBoxState();
+          setReportMode("fbig");
           openPopup("Error", "Report not found");
           return;
         }
@@ -1156,6 +1251,7 @@ DD➜1"></textarea>
           renderEnrollmentFields(0);
           attachZeroClearInputs();
           updateTimeBoxState();
+          setReportMode("fbig");
           openPopup("Error", "You cannot edit this report");
           return;
         }
@@ -1174,6 +1270,7 @@ DD➜1"></textarea>
         renderEnrollmentFields(0);
         attachZeroClearInputs();
         updateTimeBoxState();
+        setReportMode("fbig");
         openPopup("Error", "Failed to load report");
       }
     }
@@ -1301,6 +1398,17 @@ DD➜1"></textarea>
         const el = document.getElementById(id);
         if(el.value === "") el.value = 0;
       });
+
+      const tempData = {
+        friendRequest: Number(document.getElementById("friendRequest").value || 0),
+        accept: Number(document.getElementById("accept").value || 0),
+        message: Number(document.getElementById("message").value || 0),
+        reply: Number(document.getElementById("reply").value || 0),
+        chatting: Number(document.getElementById("chatting").value || 0),
+        discussWork: Number(document.getElementById("discussWork").value || 0)
+      };
+
+      setReportMode(detectReportModeFromData(tempData));
 
       updateTimeBoxState();
       showMsg(saveMsg, "Pasted report applied successfully", "var(--good)");
@@ -1468,6 +1576,7 @@ DD➜1"></textarea>
         renderEnrollmentFields(0);
         attachZeroClearInputs();
         updateTimeBoxState();
+        setReportMode("fbig");
       } else {
         attachZeroClearInputs();
         updateTimeBoxState();
