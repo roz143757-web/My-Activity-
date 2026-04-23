@@ -53,22 +53,22 @@
   <div class="card">
     <h1>MY ACTIVITY</h1>
     <p id="pageText">Easy Report Saving System</p>
-    <button class="btn" id="actionBtn" onclick="downloadApp()">Download App</button>
+    <button class="btn" id="downloadBtn" onclick="downloadApp()">Download App</button>
   </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const isUpdateMode = params.get("mode") === "update";
 
-    const actionBtn = document.getElementById("actionBtn");
     const pageText = document.getElementById("pageText");
+    const downloadBtn = document.getElementById("downloadBtn");
 
     if (isUpdateMode) {
-      actionBtn.textContent = "Update Now";
       pageText.textContent = "New version available. Tap below to update your app.";
+      downloadBtn.textContent = "Update Now";
     } else {
-      actionBtn.textContent = "Download App";
       pageText.textContent = "Easy Report Saving System";
+      downloadBtn.textContent = "Download App";
     }
 
     function downloadApp(){
