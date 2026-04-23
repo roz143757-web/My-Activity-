@@ -1081,7 +1081,7 @@ Follow Up➜ ${data.totals.followUp}
 Enrollment (D.D)➜ ${data.totals.dd}`;
       }
 
-      window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+window.location.href = "https://wa.me/?text=" + encodeURIComponent(text);
     }
 
     function sumReports(arr){
@@ -1258,7 +1258,7 @@ Enrollment (D.D)➜ ${data.totals.dd}`;
 
     onAuthStateChanged(auth, async (user) => {
       if(!user){
-        location.replace("index.html");
+        location.href = "index.html";
         return;
       }
       await loadReports();
