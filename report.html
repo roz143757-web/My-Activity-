@@ -830,11 +830,11 @@ DD➜1"></textarea>
     drawerOverlay.addEventListener("click", () => closeDrawer());
 
     drawerShareBtn.addEventListener("click", async () => {
-      closeDrawer();
-      setTimeout(async () => {
-        await shareApp();
-      }, 50);
-    });
+  closeDrawer();
+  setTimeout(() => {
+    window.location.href = "shareapp://open";
+  }, 50);
+});
 
     drawerLogoutBtn.addEventListener("click", () => {
       closeDrawer();
@@ -853,9 +853,9 @@ DD➜1"></textarea>
     });
 
     goDashboardBtn.addEventListener("click", () => {
-      isProgrammaticNavigation = true;
-      location.href = "dashboard.html";
-    });
+  isProgrammaticNavigation = true;
+  location.href = "dashboard.html";
+});
 
     function getEditReportIdFromSource(){
       const params = new URLSearchParams(window.location.search);
