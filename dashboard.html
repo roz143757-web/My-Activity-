@@ -643,15 +643,17 @@
       </div>
 
       <div id="filterPopup" class="filter-popup hidden">
-        <label>Date</label>
-        <input type="date" id="filterDate" />
-
         <label>Report Type</label>
         <select id="filterType">
           <option value="">Select report type</option>
           <option value="daily">Daily</option>
           <option value="weekly">Weekly</option>
           <option value="monthly">Monthly</option>
+        </select>
+
+        <label>Limit</label>
+        <select id="filterLimit">
+          <option value="">Select limit</option>
         </select>
 
         <div id="dailyModeFilterWrap" class="sub-filter-wrap hidden">
@@ -683,7 +685,9 @@
       where,
       getDocs,
       doc,
-      deleteDoc
+      deleteDoc,
+      orderBy,
+      limit as firestoreLimit
     } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -706,8 +710,8 @@
     const filterPopup = document.getElementById("filterPopup");
     const applyFilterBtn = document.getElementById("applyFilterBtn");
     const resetFilterBtn = document.getElementById("resetFilterBtn");
-    const filterDate = document.getElementById("filterDate");
     const filterType = document.getElementById("filterType");
+    const filterLimit = document.getElementById("filterLimit");
 
     const dailyModeFilterWrap = document.getElementById("dailyModeFilterWrap");
     const dailyListFilterBtn = document.getElementById("dailyListFilterBtn");
@@ -722,7 +726,7 @@
 
     let currentTab = "daily";
     let allReports = [];
-    let currentFilterDate = "";
+    let currentFilterLimit = "1";
     let renderedShareItems = [];
     let popupOkAction = null;
     let popupCancelAction = null;
@@ -793,6 +797,10 @@
 
     function openFilterPopup(){
       filterPopup.classList.remove("hidden");
+      if(!filterType.value){
+        filterType.value = currentTab === "total" ? "daily" : currentTab;
+      }
+      updateFilterLimitOptions(filterType.value);
       updateDailyModeFilterVisibility();
       history.pushState({ page: "filter" }, "");
     }
@@ -843,7 +851,42 @@
       dailyModeFilterWrap.classList.toggle("hidden", !shouldShow);
     }
 
+    function updateFilterLimitOptions(type){
+      filterLimit.innerHTML = `<option value="">Select limit</option>`;
+
+      if(type === "daily"){
+        filterLimit.innerHTML = `
+          <option value="10">Last 10 Reports</option>
+          <option value="20">Last 20 Reports</option>
+          <option value="30">Last 30 Reports</option>
+          <option value="50">Last 50 Reports</option>
+          <option value="100">Last 100 Reports</option>
+          <option value="all">All Reports</option>
+        `;
+      }
+
+      if(type === "weekly"){
+        filterLimit.innerHTML = `
+          <option value="5">Last 5 Weeks</option>
+          <option value="10">Last 10 Weeks</option>
+          <option value="15">Last 15 Weeks</option>
+          <option value="20">Last 20 Weeks</option>
+          <option value="all">All Weeks</option>
+        `;
+      }
+
+      if(type === "monthly"){
+        filterLimit.innerHTML = `
+          <option value="2">Last 2 Months</option>
+          <option value="5">Last 5 Months</option>
+          <option value="8">Last 8 Months</option>
+          <option value="all">All Months</option>
+        `;
+      }
+    }
+
     filterType.addEventListener("change", () => {
+      updateFilterLimitOptions(filterType.value);
       updateDailyModeFilterVisibility();
     });
 
@@ -857,35 +900,41 @@
       updateDailyModeFilterButtons();
     });
 
-    applyFilterBtn.addEventListener("click", () => {
-      currentFilterDate = filterDate.value || "";
+    applyFilterBtn.addEventListener("click", async () => {
       if(filterType.value){
         currentTab = filterType.value;
         setActiveTab();
       }
-      renderDashboard(currentFilterDate);
+
+      currentFilterLimit = filterLimit.value || "1";
+
+      await loadReportsForTab(currentTab, currentFilterLimit);
+      renderDashboard();
       closeFilterPopup(true);
     });
 
-    resetFilterBtn.addEventListener("click", () => {
-      currentFilterDate = "";
-      filterDate.value = "";
+    resetFilterBtn.addEventListener("click", async () => {
       filterType.value = "";
+      filterLimit.innerHTML = `<option value="">Select limit</option>`;
       currentTab = "daily";
+      currentFilterLimit = "1";
       dailyShowList = true;
       dailyShowFbig = true;
       updateDailyModeFilterButtons();
       updateDailyModeFilterVisibility();
       setActiveTab();
-      renderDashboard("");
+      await loadReportsForTab("daily", "1");
+      renderDashboard();
       closeFilterPopup(true);
     });
 
     tabButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         currentTab = btn.dataset.tab;
+        currentFilterLimit = "1";
         setActiveTab();
-        renderDashboard(currentFilterDate);
+        await loadReportsForTab(currentTab, "1");
+        renderDashboard();
       });
     });
 
@@ -937,42 +986,88 @@
       return isListStyle(data) ? "LIST" : "FACEBOOK/INSTAGRAM";
     }
 
-    async function loadReports(){
+    async function fetchUserReports(options = {}){
       const user = auth.currentUser;
-      if(!user) return;
+      if(!user) return [];
 
-      isLoadingReports = true;
-      showLoadingState();
+      const {
+        max = null,
+        startDate = ""
+      } = options;
 
-      const q = query(collection(db, "reports"), where("userId", "==", user.uid));
+      const parts = [
+        collection(db, "reports"),
+        where("userId", "==", user.uid)
+      ];
+
+      if(startDate){
+        parts.push(where("date", ">=", startDate));
+      }
+
+      parts.push(orderBy("date", "desc"));
+
+      if(max && max !== "all"){
+        parts.push(firestoreLimit(Number(max)));
+      }
+
+      const q = query(...parts);
       const snap = await getDocs(q);
 
-      allReports = [];
+      const items = [];
       snap.forEach(docSnap => {
-        allReports.push({ id: docSnap.id, ...docSnap.data() });
+        items.push({ id: docSnap.id, ...docSnap.data() });
       });
 
-      allReports.sort((a, b) => {
+      items.sort((a, b) => {
         const ad = a.date || "";
         const bd = b.date || "";
         return bd.localeCompare(ad);
       });
 
+      return items;
+    }
+
+    async function loadReportsForTab(tab, limitValue = "1"){
+      isLoadingReports = true;
+      showLoadingState();
+
+      try{
+        if(tab === "daily"){
+          const max = limitValue === "all" ? null : Number(limitValue || 1);
+          allReports = await fetchUserReports({ max });
+        }
+
+        if(tab === "weekly"){
+  allReports = await fetchUserReports();
+}
+
+if(tab === "monthly"){
+  allReports = await fetchUserReports();
+}
+
+        if(tab === "total"){
+          allReports = await fetchUserReports();
+        }
+      }catch(error){
+        dashboardContent.innerHTML = `<div class="list-card empty">Failed to load reports</div>`;
+        allReports = [];
+      }
+
       isLoadingReports = false;
     }
 
-    function renderDashboard(filterDate = ""){
+    function renderDashboard(){
       if(isLoadingReports){
         showLoadingState();
         return;
       }
 
       if(currentTab === "daily"){
-        renderDaily(filterDate);
+        renderDaily();
       }else if(currentTab === "weekly"){
-        renderWeekly(filterDate);
+        renderWeekly();
       }else if(currentTab === "monthly"){
-        renderMonthly(filterDate);
+        renderMonthly();
       }else{
         renderTotal();
       }
@@ -986,12 +1081,8 @@
       return "-";
     }
 
-    function renderDaily(filterDate = ""){
+    function renderDaily(){
       let list = [...allReports];
-
-      if(filterDate){
-        list = list.filter(item => item.date === filterDate);
-      }
 
       list = list.filter(item => {
         const listStyle = isListStyle(item);
@@ -1048,8 +1139,12 @@ ${buildEnrollmentLines(item.enrollments)}</div>
       attachActionButtons();
     }
 
-    function renderWeekly(filterDate = ""){
-      const weeklyGroups = buildWeeklyGroups(allReports, filterDate);
+    function renderWeekly(){
+      let weeklyGroups = buildWeeklyGroups(allReports);
+
+      if(currentFilterLimit !== "all"){
+        weeklyGroups = weeklyGroups.slice(0, Number(currentFilterLimit || 1));
+      }
 
       if(weeklyGroups.length === 0){
         dashboardContent.innerHTML = `<div class="list-card empty">No report</div>`;
@@ -1093,8 +1188,12 @@ ${buildEnrollmentLines(group.enrollments)}</div>
       attachActionButtons();
     }
 
-    function renderMonthly(filterDate = ""){
-      const monthlyGroups = buildMonthlyGroups(allReports, filterDate);
+    function renderMonthly(){
+      let monthlyGroups = buildMonthlyGroups(allReports);
+
+      if(currentFilterLimit !== "all"){
+        monthlyGroups = monthlyGroups.slice(0, Number(currentFilterLimit || 1));
+      }
 
       if(monthlyGroups.length === 0){
         dashboardContent.innerHTML = `<div class="list-card empty">No report</div>`;
@@ -1235,7 +1334,7 @@ Amount➜ ${item.amount || 0}`).join("\n")}`;
               try{
                 await deleteDoc(doc(db, "reports", reportId));
                 allReports = allReports.filter(item => item.id !== reportId);
-                renderDashboard(currentFilterDate);
+                renderDashboard();
                 openPopup("Deleted", "Report deleted successfully");
               }catch(error){
                 openPopup("Error", "Delete failed", { isDanger: true });
@@ -1380,7 +1479,7 @@ Enrollment (D.D)➜ ${data.totals.dd}`}`;
       };
     }
 
-    function buildWeeklyGroups(reports, filterDate = ""){
+    function buildWeeklyGroups(reports){
       const grouped = {};
       const today = new Date();
       const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -1393,11 +1492,7 @@ Enrollment (D.D)➜ ${data.totals.dd}`}`;
         const end = new Date(start);
         end.setDate(start.getDate() + 6);
 
-        if(end > todayOnly) return;
-
         const endIso = toIso(end);
-        if(filterDate && endIso !== filterDate) return;
-
         const key = `${toIso(start)}__${endIso}`;
 
         if(!grouped[key]){
@@ -1423,7 +1518,7 @@ Enrollment (D.D)➜ ${data.totals.dd}`}`;
         .map(([_, value]) => value);
     }
 
-    function buildMonthlyGroups(reports, filterDate = ""){
+    function buildMonthlyGroups(reports){
       const grouped = {};
       const today = new Date();
       const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -1437,9 +1532,6 @@ Enrollment (D.D)➜ ${data.totals.dd}`}`;
         const monthStart = new Date(y, m, 1);
         const monthEnd = new Date(y, m + 1, 0);
         const monthEndIso = toIso(monthEnd);
-
-        if(monthEnd > todayOnly) return;
-        if(filterDate && monthEndIso !== filterDate) return;
 
         const key = `${y}-${String(m + 1).padStart(2,"0")}`;
 
@@ -1496,6 +1588,19 @@ Enrollment (D.D)➜ ${data.totals.dd}`}`;
       ].join("-");
     }
 
+    function getDateBeforeDays(days){
+      const d = new Date();
+      d.setDate(d.getDate() - Number(days || 0));
+      return toIso(d);
+    }
+
+    function getDateBeforeMonths(months){
+      const d = new Date();
+      d.setMonth(d.getMonth() - Number(months || 0));
+      d.setDate(1);
+      return toIso(d);
+    }
+
     function shortDateDisplay(value){
       if(!value) return "-";
       const d = new Date(value);
@@ -1525,7 +1630,11 @@ Enrollment (D.D)➜ ${data.totals.dd}`}`;
         location.href = "index.html";
         return;
       }
-      await loadReports();
+
+      currentTab = "daily";
+      currentFilterLimit = "1";
+      setActiveTab();
+      await loadReportsForTab("daily", "1");
       renderDashboard();
     });
   </script>
