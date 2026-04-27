@@ -1565,7 +1565,7 @@ function startVoice(){
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   if(!SpeechRecognition){
-    openPopup("Error", "Voice not supported. Use Chrome HTTPS link.");
+    openPopup("Error", "SpeechRecognition supported nahi hai");
     return;
   }
 
@@ -1574,28 +1574,30 @@ function startVoice(){
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
 
-  // 👉 Indicator ON (Voice start)
-  openPopup("🎤 Listening", "Speak now...", {
-    mode: "loading"
-  });
+  openPopup("🎤 Listening", "Ab bolo...", { mode:"loading" });
 
-  recognition.start();
+  try{
+    recognition.start();
+  }catch(e){
+    closePopup();
+    openPopup("Error", "Start error: " + e.message);
+    return;
+  }
 
   recognition.onresult = function(event){
-    const text = event.results[0][0].transcript.toLowerCase();
-
-    closePopup(); // indicator band
-
-    fillVoiceReport(text); // tumhara fill function
-  };
-
-  recognition.onspeechend = function(){
-    recognition.stop();
-  };
-
-  recognition.onerror = function(){
     closePopup();
-    openPopup("Error", "Voice not detected. Try again.");
+    const text = event.results[0][0].transcript.toLowerCase();
+    openPopup("Voice Text", text);
+    fillVoiceReport(text);
+  };
+
+  recognition.onerror = function(event){
+    closePopup();
+    openPopup("Voice Error", event.error);
+  };
+
+  recognition.onend = function(){
+    // mic stopped
   };
 }
 
