@@ -735,6 +735,61 @@
 
     let dailyShowList = true;
     let dailyShowFbig = true;
+const DASHBOARD_STATE_KEY = "dashboardFilterState";
+
+function todayKey(){
+  const d = new Date();
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function saveDashboardState(){
+  const state = {
+    savedDate: todayKey(),
+    currentTab,
+    currentFilterLimit,
+    dailyShowList,
+    dailyShowFbig
+  };
+  localStorage.setItem(DASHBOARD_STATE_KEY, JSON.stringify(state));
+}
+
+function loadDashboardState(){
+  const raw = localStorage.getItem(DASHBOARD_STATE_KEY);
+  if(!raw) return false;
+
+  try{
+    const state = JSON.parse(raw);
+
+    if(state.savedDate !== todayKey()){
+      localStorage.removeItem(DASHBOARD_STATE_KEY);
+      return false;
+    }
+
+    currentTab = state.currentTab || "daily";
+    currentFilterLimit = state.currentFilterLimit || "1";
+    dailyShowList = state.dailyShowList !== false;
+    dailyShowFbig = state.dailyShowFbig !== false;
+
+    filterType.value = currentTab === "total" ? "daily" : currentTab;
+    updateFilterLimitOptions(filterType.value);
+    filterLimit.value = currentFilterLimit;
+    updateDailyModeFilterButtons();
+    updateDailyModeFilterVisibility();
+
+    return true;
+  }catch(error){
+    localStorage.removeItem(DASHBOARD_STATE_KEY);
+    return false;
+  }
+}
+
+function clearDashboardState(){
+  localStorage.removeItem(DASHBOARD_STATE_KEY);
+}
 
     history.replaceState({ page: "dashboard" }, "");
 
@@ -901,42 +956,48 @@
     });
 
     applyFilterBtn.addEventListener("click", async () => {
-      if(filterType.value){
-        currentTab = filterType.value;
-        setActiveTab();
-      }
+  if(filterType.value){
+    currentTab = filterType.value;
+    setActiveTab();
+  }
 
-      currentFilterLimit = filterLimit.value || "1";
+  currentFilterLimit = filterLimit.value || "1";
 
-      await loadReportsForTab(currentTab, currentFilterLimit);
-      renderDashboard();
-      closeFilterPopup(true);
-    });
+  saveDashboardState();
+
+  await loadReportsForTab(currentTab, currentFilterLimit);
+  renderDashboard();
+  closeFilterPopup(true);
+});
 
     resetFilterBtn.addEventListener("click", async () => {
-      filterType.value = "";
-      filterLimit.innerHTML = `<option value="">Select limit</option>`;
-      currentTab = "daily";
-      currentFilterLimit = "1";
-      dailyShowList = true;
-      dailyShowFbig = true;
-      updateDailyModeFilterButtons();
-      updateDailyModeFilterVisibility();
-      setActiveTab();
-      await loadReportsForTab("daily", "1");
-      renderDashboard();
-      closeFilterPopup(true);
-    });
+  clearDashboardState();
+
+  filterType.value = "";
+  filterLimit.innerHTML = `<option value="">Select limit</option>`;
+  currentTab = "daily";
+  currentFilterLimit = "1";
+  dailyShowList = true;
+  dailyShowFbig = true;
+  updateDailyModeFilterButtons();
+  updateDailyModeFilterVisibility();
+  setActiveTab();
+  await loadReportsForTab("daily", "1");
+  renderDashboard();
+  closeFilterPopup(true);
+});
 
     tabButtons.forEach(btn => {
-      btn.addEventListener("click", async () => {
-        currentTab = btn.dataset.tab;
-        currentFilterLimit = "1";
-        setActiveTab();
-        await loadReportsForTab(currentTab, "1");
-        renderDashboard();
-      });
-    });
+  btn.addEventListener("click", async () => {
+    currentTab = btn.dataset.tab;
+
+    saveDashboardState();
+
+    setActiveTab();
+    await loadReportsForTab(currentTab, currentFilterLimit);
+    renderDashboard();
+  });
+});
 
     window.addEventListener("popstate", () => {
       if(handlingPopState){
@@ -1626,17 +1687,26 @@ Enrollment (D.D)➜ ${data.totals.dd}`}`;
     updateDailyModeFilterVisibility();
 
     onAuthStateChanged(auth, async (user) => {
-      if(!user){
-        location.href = "index.html";
-        return;
-      }
+  if(!user){
+    location.href = "index.html";
+    return;
+  }
 
-      currentTab = "daily";
-      currentFilterLimit = "1";
-      setActiveTab();
-      await loadReportsForTab("daily", "1");
-      renderDashboard();
-    });
+  const hasSavedState = loadDashboardState();
+
+  if(!hasSavedState){
+    currentTab = "daily";
+    currentFilterLimit = "1";
+    dailyShowList = true;
+    dailyShowFbig = true;
+    updateDailyModeFilterButtons();
+    updateDailyModeFilterVisibility();
+  }
+
+  setActiveTab();
+  await loadReportsForTab(currentTab, currentFilterLimit);
+  renderDashboard();
+});
   </script>
 </body>
 </html>
