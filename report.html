@@ -141,9 +141,6 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      user-select:none;
-      -webkit-user-select:none;
-      -webkit-touch-callout:none;
     }
 
     .mode-switch{
@@ -546,6 +543,8 @@
   </style>
 </head>
 <body>
+  <audio id="successSound" src="success.mp3" preload="auto"></audio>
+  <audio id="errorSound" src="error.mp3" preload="auto"></audio>
   <div class="drawer-overlay" id="drawerOverlay"></div>
 
   <aside class="drawer" id="drawer">
@@ -554,9 +553,10 @@
       <div class="brand-subtitle">Easy Report Saving System</div>
     </div>
 
-    <button class="btn btn-secondary" id="drawerShareBtn">Share App</button>
-    <button class="btn btn-secondary" id="drawerCloseBtn">Close</button>
-    <button class="btn btn-primary" id="drawerLogoutBtn">Logout</button>
+   <button class="btn btn-secondary" id="drawerShareBtn">Share App</button>
+<button class="btn btn-secondary" onclick="location.href='pdf.html'">📄 Text to PDF</button>
+<button class="btn btn-secondary" id="drawerCloseBtn">Close</button>
+<button class="btn btn-primary" id="drawerLogoutBtn">Logout</button>
   </aside>
 
   <div class="popup" id="popup">
@@ -759,10 +759,12 @@ DD➜1"></textarea>
     const parsePasteBtn = document.getElementById("parsePasteBtn");
     const quickPaste = document.getElementById("quickPaste");
     const enrollmentContainer = document.getElementById("enrollmentContainer");
-
+    const errorSound = document.getElementById("errorSound");
     const popup = document.getElementById("popup");
     const popupTitle = document.getElementById("popupTitle");
     const popupText = document.getElementById("popupText");
+    const successSound = document.getElementById("successSound");
+
     const popupOkBtn = document.getElementById("popupOkBtn");
     const popupCancelBtn = document.getElementById("popupCancelBtn");
     const popupCircle = document.getElementById("popupCircle");
@@ -788,20 +790,42 @@ DD➜1"></textarea>
       el.textContent = text;
       el.style.color = color || "#ffffff";
     }
-
+  
+    function playSuccessSound(){
+      try{
+        successSound.currentTime = 0;
+        successSound.play();
+      }catch(error){}
+    }
+   
+    function playErrorSound(){
+      try{
+        errorSound.currentTime = 0;
+        errorSound.play();
+      }catch(error){}
+    }
+   
     function openPopup(title, text, options = {}){
-      const {
-        onOk = null,
-        onCancel = null,
-        okText = "OK",
-        cancelText = "No",
-        showCancel = false,
-        mode = "normal"
-      } = options;
+  const {
+    onOk = null,
+    onCancel = null,
+    okText = "OK",
+    cancelText = "No",
+    showCancel = false,
+    mode = "normal",
+    playSound = false
+  } = options;
 
       popupTitle.textContent = title;
       popupText.textContent = text;
       popup.classList.add("show");
+      if(playSound){
+  playSuccessSound();
+}
+
+if(soundType === "error"){
+    playErrorSound();
+}
 
       popupOkAction = onOk;
       popupCancelAction = onCancel;
@@ -1309,51 +1333,63 @@ DD➜1"></textarea>
       const lines = raw.split(/\n+/).map(x => x.trim()).filter(Boolean);
 
       const aliasMap = {
-        "friend request":"friendRequest",
-        "fr":"friendRequest",
-        "accept":"accept",
-        "acp":"accept",
-        "ac":"accept",
-        "message":"message",
-        "sms":"message",
-        "reply":"reply",
-        "rep":"reply",
-        "rp":"reply",
-        "chatting":"chatting",
-        "ch":"chatting",
-        "discuss work (k.k)":"discussWork",
-        "discuss work k.k":"discussWork",
-        "discuss work":"discussWork",
-        "k.k":"discussWork",
-        "kk":"discussWork",
-        "mobile number":"mobileNumberCount",
-        "mob":"mobileNumberCount",
-        "mobile":"mobileNumberCount",
-        "invitation":"invitation",
-        "in":"invitation",
-        "inv":"invitation",
-        "confirm":"confirm",
-        "cnfrm":"confirm",
-        "confirmd":"confirm",
-        "cnf":"confirm",
-        "stp":"stp",
-        "follow up":"followUp",
-        "followup":"followUp",
-        "enrollment (d.d)":"dd",
-        "d.d":"dd",
-        "dd":"dd"
-      };
+  "friend request":"friendRequest",
+  "fr":"friendRequest",
+
+  "accept":"accept",
+  "acp":"accept",
+
+  "message":"message",
+  "sms":"message",
+
+  "reply":"reply",
+  "rep":"reply",
+
+  "chatting":"chatting",
+  "ch":"chatting",
+
+  "kk":"discussWork",
+  "k.k":"discussWork",
+  "discuss work":"discussWork",
+
+  "mob":"mobileNumberCount",
+  "mobile":"mobileNumberCount",
+  "mobile number":"mobileNumberCount",
+
+  "inv":"invitation",
+  "in":"invitation",
+  "invitation":"invitation",
+
+  "cnfrm":"confirm",
+  "confirm":"confirm",
+
+  "stp":"stp",
+
+  "follow up":"followUp",
+  "followup":"followUp",
+
+  "dd":"dd",
+  "d.d":"dd",
+  "enrollment":"dd"
+};
 
       for(const line of lines){
         const clean = line.replace(/[|]/g, " ").trim();
         const lower = clean.toLowerCase();
 
         if(lower.startsWith("date")){
-          const dateVal = clean.split(/[:➜\-]/).slice(1).join(" ").trim() || clean.replace(/date/i, "").trim();
-          const parsedDate = smartDate(dateVal);
-          if(parsedDate) fillFieldValue("date", parsedDate);
-          continue;
-        }
+  let dateVal = clean
+    .replace(/date/ig, "")
+    .replace(/[➜:：\-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const parsedDate = smartDate(dateVal);
+  if(parsedDate){
+    fillFieldValue("date", parsedDate);
+  }
+  continue;
+}
 
         if(lower.startsWith("time")){
           const timeParts = extractTimeFromLine(clean);
@@ -1411,8 +1447,6 @@ DD➜1"></textarea>
         discussWork: Number(document.getElementById("discussWork").value || 0)
       };
 
-      setReportMode(detectReportModeFromData(tempData));
-
       updateTimeBoxState();
       showMsg(saveMsg, "Pasted report applied successfully", "var(--good)");
     });
@@ -1458,9 +1492,12 @@ DD➜1"></textarea>
 
       if(missingFields.length > 0){
         openPopup(
-          "Incomplete Form",
-          "Please fill these fields:\n" + missingFields.join("\n")
-        );
+  "Incomplete Form",
+  "Please fill these fields:\n" + missingFields.join("\n"),
+  {
+    soundType: "error"
+  }
+);
         return;
       }
 
@@ -1492,10 +1529,11 @@ DD➜1"></textarea>
 
           closePopup();
           openPopup("Updated", "Report updated successfully", {
-            onOk: () => {
-              resetReportForm();
-            }
-          });
+  playSound: true,
+  onOk: () => {
+    resetReportForm();
+  }
+});
         } else {
           await addDoc(collection(db, "reports"), {
             userId: user.uid,
@@ -1506,10 +1544,11 @@ DD➜1"></textarea>
 
           closePopup();
           openPopup("Saved", "Saved successfully", {
-            onOk: () => {
-              resetReportForm();
-            }
-          });
+  playSound: true,
+  onOk: () => {
+    resetReportForm();
+  }
+});
         }
       } catch(error){
         closePopup();
@@ -1561,149 +1600,30 @@ DD➜1"></textarea>
         location.href = "index.html";
       }
     });
-function startVoice(){
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  if(!SpeechRecognition){
-    headerTitle.textContent = isEditMode ? "EDIT REPORT" : "NEW REPORT";
-    showMsg(saveMsg, "Voice not supported here", "#ffffff");
-    return;
-  }
-
-  const originalTitle = isEditMode ? "EDIT REPORT" : "NEW REPORT";
-
-  const recognition = new SpeechRecognition();
-  recognition.lang = "en-IN";
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-
-  headerTitle.textContent = "🎤 LISTENING...";
-
-  let gotResult = false;
-
-  const noSpeechTimer = setTimeout(() => {
-    if(!gotResult){
-      recognition.stop();
-      headerTitle.textContent = originalTitle;
-      showMsg(saveMsg, "Voice not detected. Try again.", "#ffffff");
-    }
-  }, 3000);
-
-  try{
-    recognition.start();
-  }catch(e){
-    clearTimeout(noSpeechTimer);
-    headerTitle.textContent = originalTitle;
-    showMsg(saveMsg, "Voice start failed", "#ffffff");
-    return;
-  }
-
-  recognition.onresult = function(event){
-    gotResult = true;
-    clearTimeout(noSpeechTimer);
-
-    const text = event.results[0][0].transcript.toLowerCase();
-    fillVoiceReport(text);
-
-    headerTitle.textContent = "VOICE FILLED ✓";
-
-    setTimeout(() => {
-      headerTitle.textContent = originalTitle;
-    }, 1500);
-  };
-
-  recognition.onerror = function(){
-    clearTimeout(noSpeechTimer);
-    headerTitle.textContent = originalTitle;
-    showMsg(saveMsg, "Voice not detected. Try again.", "#ffffff");
-  };
-
-  recognition.onend = function(){
-    if(!gotResult){
-      clearTimeout(noSpeechTimer);
-      headerTitle.textContent = originalTitle;
-    }
-  };
-}
-
-function fillVoiceReport(text){
-  const aliasMap = [
-    { ids:["fr","friend request"], target:"friendRequest" },
-    { ids:["accept","acp","ac"], target:"accept" },
-    { ids:["message","sms"], target:"message" },
-    { ids:["reply","rep","rp"], target:"reply" },
-    { ids:["chatting","chat","ch"], target:"chatting" },
-    { ids:["kk","k k","discuss work"], target:"discussWork" },
-    { ids:["mobile","mob","mobile number"], target:"mobileNumberCount" },
-    { ids:["invitation","invite","in"], target:"invitation" },
-    { ids:["confirm","cnfrm","cnf"], target:"confirm" },
-    { ids:["stp"], target:"stp" },
-    { ids:["follow up","followup","follow"], target:"followUp" },
-    { ids:["dd","d d","enrollment"], target:"dd" }
-  ];
-
-  aliasMap.forEach(item => {
-    item.ids.forEach(key => {
-      const regex = new RegExp("\\b" + key + "\\s*(\\d+)", "i");
-      const match = text.match(regex);
-
-      if(match){
-        fillFieldValue(item.target, Number(match[1]));
-
-        if(item.target === "dd"){
-          renderEnrollmentFields(Number(match[1]));
-        }
-      }
-    });
-  });
-
-  updateTimeBoxState();
-  openPopup("Voice Filled", "Report values filled successfully");
-}
-
-let voicePressTimer = null;
-
-headerTitle.addEventListener("touchstart", function(e){
-  e.preventDefault();
-
-  voicePressTimer = setTimeout(() => {
-    startVoice();
-  }, 500);
-}, { passive:false });
-
-headerTitle.addEventListener("touchend", function(e){
-  e.preventDefault();
-  clearTimeout(voicePressTimer);
-});
-
-headerTitle.addEventListener("touchmove", function(e){
-  e.preventDefault();
-  clearTimeout(voicePressTimer);
-});
 
     onAuthStateChanged(auth, async (user) => {
-  if(!user){
-    if(!isProgrammaticNavigation){
-      isProgrammaticNavigation = true;
-      location.href = "index.html";
-    }
-    return;
-  }
+      if(!user){
+        if(!isProgrammaticNavigation){
+          isProgrammaticNavigation = true;
+          location.href = "index.html";
+        }
+        return;
+      }
 
-  setEditModeUI();
-  await loadEditReportIfNeeded(user);
+      setEditModeUI();
+      await loadEditReportIfNeeded(user);
 
-  if(!isEditMode){
-    formatDateInputToday();
-    renderEnrollmentFields(0);
-    attachZeroClearInputs();
-    updateTimeBoxState();
-    setReportMode("fbig");
-  } else {
-    attachZeroClearInputs();
-    updateTimeBoxState();
-  }
-});
+      if(!isEditMode){
+        formatDateInputToday();
+        renderEnrollmentFields(0);
+        attachZeroClearInputs();
+        updateTimeBoxState();
+        setReportMode("fbig");
+      } else {
+        attachZeroClearInputs();
+        updateTimeBoxState();
+      }
+    });
   </script>
 </body>
 </html>
